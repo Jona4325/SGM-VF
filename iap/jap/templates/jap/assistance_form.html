@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {# Ajusta si tu base se llama diferente #}
+
+{% block title %}{{ action_title|default:action }} Asistencia{% endblock %}
+
+{% block body %}
+<h1>{{ action_title|default:action }} Asistencia</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {# Renderizar campos con as_p o individualmente #}
+    {{ form.as_p }}    
+
+    <button type="submit" class="btn btn-success">{{ action }}</button>
+    <a href="{% url 'jap:assistance_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

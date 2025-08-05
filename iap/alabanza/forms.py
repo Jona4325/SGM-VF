@@ -47,3 +47,13 @@ class AssistanceForm(forms.ModelForm):
                 required=False,
                 widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
             )
+            
+class AssistanceUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Assistance
+        fields = ['server', 'date', 'attended']
+        widgets = {
+            'server': forms.Select(attrs={'class': 'form-select'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'attended': forms.CheckboxInput(attrs={'class': 'form-check-input ms-2'}),
+        }

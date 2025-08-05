@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Confirm Deletion" %}{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h2>{% translate "Confirm Deletion" %}</h2>
+                </div>
+                <div class="card-body">
+                    <p>{% blocktrans with object_name=object %}Are you sure you want to delete the assistance record for <strong>{{ object_name }}</strong>?{% endblocktrans %}</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">{% translate "Yes, delete" %}</button>
+                        <a href="{% url 'alabanza:assistance_list' %}" class="btn btn-secondary">{% translate "Cancel" %}</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,34 +1,41 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Lista de Coordinadores{% endblock %}
+{% block title %}{% translate "Coordinators List" %}{% endblock %}
 
 {% block body %}
-<h2>Lista de Coordinadores</h2>
-<a href="{% url 'alabanza:coordinator_create' %}" class="btn btn-primary mb-3">Agregar Nuevo Coordinador</a>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{% translate "Coordinators List" %}</h2>
+        <a href="{% url 'alabanza:coordinator_create' %}" class="btn btn-primary">{% translate "Add New Coordinator" %}</a>
+    </div>
 
-{% if coordinators %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for coordinator in coordinators %}
-            <tr>
-                <td>{{ coordinator.name }}</td>
-                <td>{{ coordinator.surname }}</td>
-                <td>
-                    <a href="{% url 'alabanza:coordinator_update' coordinator.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'alabanza:coordinator_delete' coordinator.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No hay coordinadores registrados.</p>
-{% endif %}
+    {% if coordinators %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="thead-light">
+                <tr>
+                    <th>{% translate "Name" %}</th>
+                    <th>{% translate "Surname" %}</th>
+                    <th>{% translate "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coordinator in coordinators %}
+                <tr>
+                    <td>{{ coordinator.name }}</td>                    
+                    <td>{{ coordinator.surname }}</td>
+                    <td>                        
+                        <a href="{% url 'alabanza:coordinator_update' coordinator.pk %}" class="btn btn-sm btn-warning" title="{% translate 'Edit' %}"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'alabanza:coordinator_delete' coordinator.pk %}" class="btn btn-sm btn-danger" title="{% translate 'Delete' %}"><i class="fas fa-trash-alt"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="alert alert-info">{% translate "No coordinators registered yet." %}</div>
+    {% endif %}
+</div>
 {% endblock %}

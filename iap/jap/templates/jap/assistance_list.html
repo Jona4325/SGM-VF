@@ -5,7 +5,7 @@
 {% block body %}
 <h1>Lista de Asistencias</h1>
 <div class="mb-3">
-    <a href="{% url 'cunakids:assistance_create' %}" class="btn btn-primary">Registrar Nueva Asistencia</a>
+    <a href="{% url 'jap:assistance_create' %}" class="btn btn-primary">Registrar Nueva Asistencia</a>
     
 </div>
 
@@ -30,8 +30,8 @@
             <td>{{ a.coordinator.name }} {{ a.coordinator.surname }}</td>
             <td>{{ a.attended|yesno:"Sí,No" }}</td> {# Filtro yesno para boolean #}
             <td>
-                <a href="{% url 'cunakids:assistance_update' a.pk %}" class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i> </a>
-                <a href="{% url 'cunakids:assistance_delete' a.pk %}" class="btn btn-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
+                <a href="{% url 'jap:assistance_update' a.pk %}" class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i> </a>
+                <a href="{% url 'jap:assistance_delete' a.pk %}" class="btn btn-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
             </td>
         </tr>
         {% endfor %}
@@ -40,5 +40,5 @@
 {% else %}
 <p>No hay registros de asistencia.</p>
 {% endif %}
-<a href="{% url 'cunakids:index' %}" class="btn btn-secondary">Volver al Inicio</a>
+<a href="{% url 'jap:index' %}" class="btn btn-secondary">Volver al Inicio</a>
 {% endblock %}

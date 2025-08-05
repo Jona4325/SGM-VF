@@ -5,7 +5,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from .models import Coordinator, Group, Server, Assistance
-from .forms import CoordinatorForm, GroupForm, ServerForm, AssistanceForm
+from .forms import CoordinatorForm, GroupForm, ServerForm, AssistanceForm,AssistanceUpdateForm
 
 from django.contrib import messages
 # Create your views here.
@@ -137,3 +137,14 @@ class AssistanceCreateView(LoginRequiredMixin,CreateView):
 
         # Redirigir a la URL de éxito directamente.
         return HttpResponseRedirect(str(self.success_url))
+    
+class AssistanceUpdateView(LoginRequiredMixin, UpdateView):
+    model = Assistance
+    form_class = AssistanceUpdateForm
+    template_name = 'alabanza/assistance_update_form.html'
+    success_url = reverse_lazy('alabanza:assistance_list')
+
+class AssistanceDeleteView(LoginRequiredMixin, DeleteView):
+    model = Assistance
+    template_name = 'alabanza/assistance_confirm_delete.html'
+    success_url = reverse_lazy('alabanza:assistance_list')    

@@ -68,9 +68,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{% url 'academia:attendancelog-detail' log.pk %}" class="btn btn-sm btn-info">{% translate "View" %}</a>
-                        <a href="{% url 'academia:attendancelog-update' log.pk %}" class="btn btn-sm btn-warning">{% translate "Edit" %}</a>
-                        <a href="{% url 'academia:attendancelog-delete' log.pk %}" class="btn btn-sm btn-danger">{% translate "Delete" %}</a>
+                        <a href="{% url 'academia:attendancelog-detail' log.pk %}" class="btn btn-sm btn-info" title="{% translate 'View' %}"><i class="fas fa-eye"></i></a>
+                        <a href="{% url 'academia:attendancelog-update' log.pk %}" class="btn btn-sm btn-warning" title="{% translate 'Edit' %}"><i class="fas fa-edit"></i></a>
+                        <a href="{% url 'academia:attendancelog-delete' log.pk %}" class="btn btn-sm btn-danger" title="{% translate 'Delete' %}"><i class="fas fa-trash-alt"></i></a>
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,85 +1,94 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Ministerio de Anfitriones{% endblock %}
+{% block title %}Ministerio de Anfitriones - Panel Principal{% endblock %}
 
 {% block body %}
-<!-- Botón para volver al inicio -->
-<div class="mb-4">
-    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
-    </a>
-</div>
+    <!-- Botón para volver al inicio -->
+    <div class="mb-4">
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+        </a>
+    </div>
 
-<div class="text-center">
-    <h1 class="display-4 fw-bold section-title">Ministerio de Anfitriones</h1>
-    <p class="lead text-muted">Gestión del ministerio de hospitalidad y bienvenida.</p>
-</div>
+    <div class="text-center mb-5">
+        <img src="{% static 'img/logo1.png' %}" alt="Logo Iglesia" height="80">
+        <h1 class="mt-3">Ministerio de Anfitriones</h1>
+        <p class="lead">Bienvenido al sistema de gestión de servidores, grupos y coordinadores.</p>
+    </div>
 
-<!-- Tarjetas de Resumen -->
-<div class="row mt-5 g-4">
-    <div class="col-md-4">
-        <div class="card text-center border-primary shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i> Total Servidores</h5>
-            </div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <p class="card-text display-4 fw-bold">{{ total_servers }}</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center border-primary shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-layer-group me-2"></i> Total Grupos</h5>
-            </div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <p class="card-text display-4 fw-bold">{{ total_groups }}</p>
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Coordinadores</h5>
+                    <p class="card-text">Gestión de coordinadores del ministerio.</p>
+                    <a href="{% url 'anfitriones:coordinator_list' %}" class="btn btn-primary">Ver lista</a>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card text-center border-primary shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i> Total Coordinadores</h5>
-            </div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <p class="card-text display-4 fw-bold">{{ total_coordinators }}</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Estadísticas -->
-<div class="row mt-5 g-4">
-    {% if group_stats %}
-    <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-light"><h4 class="mb-0">Estadísticas de Asistencia por Grupos</h4></div>
-            <div class="card-body">
-                <h6 class="card-subtitle mb-3 text-muted">Fecha: {{ group_stats.date }}</h6>
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">Total asistentes <span class="badge bg-primary rounded-pill">{{ group_stats.total_attendees }}</span></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">Grupos que asistieron <span class="badge bg-primary rounded-pill">{{ group_stats.groups_attended }}</span></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">Grupos reportados <span class="badge bg-secondary rounded-pill">{{ group_stats.total_groups_in_report }}</span></li>
-                </ul>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Grupos</h5>
+                    <p class="card-text">Administra los grupos musicales y vocales.</p>
+                    <a href="{% url 'anfitriones:group_list' %}" class="btn btn-success">Ver grupos</a>
+                </div>
             </div>
         </div>
-    </div>
-    {% endif %}
 
-    {% if server_stats %}
-    <div class="col-lg-6">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-light"><h4 class="mb-0">Asistencia de Servidores</h4></div>
-            <div class="card-body">
-                <h6 class="card-subtitle mb-3 text-muted">Fecha: {{ server_stats.date }} - {{ server_stats.service }}</h6>
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">Servidores que asistieron <span class="badge bg-primary rounded-pill">{{ server_stats.servers_attended }}</span></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">Total de servidores reportados <span class="badge bg-secondary rounded-pill">{{ server_stats.total_servers_in_report }}</span></li>
-                </ul>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Servidores</h5>
+                    <p class="card-text">Registro de miembros del ministerio.</p>
+                    <a href="{% url 'anfitriones:server_list' %}" class="btn btn-warning">Ver servidores</a>
+                </div>
             </div>
         </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Asistencia de servidores</h5>
+                    <p class="card-text">Registro de asistencia a eventos y ensayos.</p>
+                    <a href="{% url 'anfitriones:assistance_list' %}" class="btn btn-danger">Ver asistencia</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Reporte semanal</h5>
+                    <p class="card-text">Reporte semanal de asistencia al culto.</p>
+                    <a href="{% url 'anfitriones:attendance_list' %}" class="btn btn-danger">Ver estadística</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Estadísticas</h5>
+                    <p class="card-text">Reporte de estadísticas</p>
+                    <a href="{% url 'anfitriones:attendance_list' %}" class="btn btn-danger">Ver reporte</a>
+                </div>
+            </div>            
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Resumen semanal</h5>
+                    <p class="card-text">Resumen de asistencia semanal</p>
+                    <a href="{% url 'anfitriones:summary' %}" class="btn btn-danger">Ver reporte</a>
+                </div>
+            </div>            
+        </div>
     </div>
-    {% endif %}
-</div>
+
+    <footer class="text-center mt-5">
+        <hr>
+        <small>“Formar discípulos de Cristo, apasionados por cumplir el plan de Dios.”</small>
+    </footer>
 {% endblock %}

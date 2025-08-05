@@ -26,5 +26,7 @@ urlpatterns = [
     # URLs para Assistance
     path('assistance/', views.AssistanceListView.as_view(), name='assistance_list'),
     path('assistance/new/', views.AssistanceCreateView.as_view(), name='assistance_create'),
+    path('assistance/<int:pk>/edit/', views.AssistanceUpdateView.as_view(), name='assistance_update'),
+    path('assistance/<int:pk>/delete/', views.AssistanceDeleteView.as_view(), name='assistance_delete'),   
 
 ]

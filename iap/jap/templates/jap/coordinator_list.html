@@ -7,7 +7,7 @@
 <div class="container mt-4"></div>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="mb-0">Lista de coordinadores</h1>
-    <a class="btn btn-primary" href="{% url 'cunakids:coordinator_create' %}">
+    <a class="btn btn-primary" href="{% url 'jap:coordinator_create' %}">
       Crear Nuevo Coordinador
     </a>
     
@@ -28,10 +28,10 @@
       <td>{{ c.surname }}</td>        
       <td>
         <!-- Botones para Detalle, Actualizar, Eliminar -->
-        <a class="btn btn-warning btn-sm" href="{% url 'cunakids:coordinator_update' c.pk %}" title="Editar">
+        <a class="btn btn-warning btn-sm" href="{% url 'jap:coordinator_update' c.pk %}" title="Editar">
           <i class="fas fa-edit"></i>         
         </a>        
-        <a href="{% url 'cunakids:coordinator_delete' c.pk %}" class="btn btn-danger btn-sm" title="Eliminar">
+        <a href="{% url 'jap:coordinator_delete' c.pk %}" class="btn btn-danger btn-sm" title="Eliminar">
           <i class="fas fa-trash-alt"></i>
       </a>
       </td>
@@ -39,7 +39,7 @@
   {% endfor %}
 </tbody>
 </table>
-<a href="{% url 'cunakids:index' %}" class="btn btn-secondary">Volver al Inicio</a>
+<a href="{% url 'jap:index' %}" class="btn btn-secondary">Volver al Inicio</a>
 </div>
 
 {% endblock %}

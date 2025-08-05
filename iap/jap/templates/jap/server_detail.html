@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle del Servidor{% endblock %}
+
+{% block body %}
+<h1>{{ server.name }} {{ server.surname }}</h1>
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Detalles</h5>
+        <p class="card-text"><strong>Nombre:</strong> {{ server.name }}</p>
+        <p class="card-text"><strong>Apellido:</strong> {{ server.surname }}</p>
+        <p class="card-text"><strong>Coordinador(a):</strong> {{ server.coordinator }}</p>
+        <p class="card-text"><strong>Grupo:</strong> {{ server.group }}</p>
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'jap:server_update' server.pk %}" class="btn btn-warning">Editar</a>
+        <a href="{% url 'jap:server_delete' server.pk %}" class="btn btn-danger">Eliminar</a>
+        <a href="{% url 'jap:server_list' %}" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</div>
+{% endblock %}

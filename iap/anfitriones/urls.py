@@ -37,4 +37,5 @@ urlpatterns = [
     path('attendances/new/', views.AttendanceCreateView.as_view(), name='attendance_create'),
     path('attendances/<int:pk>/edit/', views.AttendanceUpdateView.as_view(), name='attendance_update'),
     path('attendances/<int:pk>/delete/', views.AttendanceDeleteView.as_view(), name='attendance_delete'),
+    path('summary/', views.summary, name='summary'),
 ]

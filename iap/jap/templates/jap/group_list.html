@@ -4,7 +4,7 @@
 
 {% block body %}
 <h1>Lista de Grupos</h1>
-<a href="{% url 'cunakids:group_create' %}" class="btn btn-primary mb-3">Registrar Nuevo Grupo</a>
+<a href="{% url 'jap:group_create' %}" class="btn btn-primary mb-3">Registrar Nuevo Grupo</a>
 
 
 {% if groups %}
@@ -22,8 +22,8 @@
                 <td>{{ group.name }}</td>
                 <td>{{ group.description }}</td>
                 <td>
-                    <a href="{% url 'cunakids:group_update' group.pk %}" class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i> </a>
-                    <a href="{% url 'cunakids:group_delete' group.pk %}" class="btn btn-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
+                    <a href="{% url 'jap:group_update' group.pk %}" class="btn btn-warning btn-sm" title="Editar"><i class="fas fa-edit"></i> </a>
+                    <a href="{% url 'jap:group_delete' group.pk %}" class="btn btn-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
                 </td>
             </tr>
             {% endfor %}
@@ -32,5 +32,5 @@
 {% else %}
     <p>No hay grupos retistrados.</p>
 {% endif %}
-<a href="{% url 'cunakids:index' %}" class="btn btn-secondary">Volver al Inicio</a>
+<a href="{% url 'jap:index' %}" class="btn btn-secondary">Volver al Inicio</a>
 {% endblock %}

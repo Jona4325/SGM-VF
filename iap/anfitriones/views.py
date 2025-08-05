@@ -11,54 +11,16 @@ from .forms import AssistanceForm, AttendanceForm, BatchAssistanceForm, Coordina
 # Create your views here.
 @login_required
 def index(request):
-    # --- General Counts ---
-    total_servers = Server.objects.count()
-    total_groups = Group.objects.count()
-    total_coordinators = Coordinator.objects.count()
+    """
+    Vista para la página principal de la aplicación Academia.
 
-    # --- Group Attendance Stats (for the most recent date with records) ---
-    latest_attendance = Attendance.objects.order_by('-date').first()
-    group_stats = {}
-    if latest_attendance:
-        latest_date = latest_attendance.date
-        # Aggregate stats for that specific date
-        stats = Attendance.objects.filter(date=latest_date).aggregate(
-            total_adults=Sum('adults'),
-            total_youngs=Sum('youngs'),
-            total_children=Sum('children')
-        )
-        group_stats = {
-            'date': latest_date,
-            'total_attendees': (stats.get('total_adults') or 0) + (stats.get('total_youngs') or 0) + (stats.get('total_children') or 0),
-            'groups_attended': Attendance.objects.filter(date=latest_date, attended=True).count(),
-            'total_groups_in_report': Attendance.objects.filter(date=latest_date).count()
-        }
+    Args:
+        request: El objeto HttpRequest.
 
-    # --- Server Assistance Stats (for the most recent date and service with records) ---
-    latest_assistance = Assistance.objects.order_by('-date', '-service').first()
-    server_stats = {}
-    if latest_assistance:
-        latest_date = latest_assistance.date
-        latest_service = latest_assistance.service
-        
-        # Get all records for that specific date and service
-        latest_service_records = Assistance.objects.filter(date=latest_date, service=latest_service)
-        
-        server_stats = {
-            'date': latest_date,
-            'service': latest_assistance.get_service_display(),
-            'servers_attended': latest_service_records.filter(attended=True).count(),
-            'total_servers_in_report': latest_service_records.count()
-        }
-
-    context = {
-        'total_servers': total_servers,
-        'total_groups': total_groups,
-        'total_coordinators': total_coordinators,
-        'group_stats': group_stats,
-        'server_stats': server_stats,
-    }
-    return render(request, 'anfitriones/index.html', context)
+    Returns:
+        HttpResponse: La respuesta HTTP con el contenido de la página.
+    """
+    return render(request, 'anfitriones/index.html')
 
 # Views para CRUD de Coordinator
 class CoordinatorListView(LoginRequiredMixin,ListView):
@@ -227,3 +189,54 @@ class AttendanceDeleteView(LoginRequiredMixin,DeleteView):
     model = Attendance
     template_name = 'anfitriones/attendance_confirm_delete.html'
     success_url = reverse_lazy('anfitriones:attendance_list')
+    
+@login_required
+def summary(request): # Renombrada de 'index' a 'summary'
+    # --- General Counts ---
+    total_servers = Server.objects.count()
+    total_groups = Group.objects.count()
+    total_coordinators = Coordinator.objects.count()
+
+    # --- Group Attendance Stats (for the most recent date with records) ---
+    latest_attendance = Attendance.objects.order_by('-date').first()
+    group_stats = {}
+    if latest_attendance:
+        latest_date = latest_attendance.date
+        # Aggregate stats for that specific date
+        stats = Attendance.objects.filter(date=latest_date).aggregate(
+            total_adults=Sum('adults'),
+            total_youngs=Sum('youngs'),
+            total_children=Sum('children')
+        )
+        group_stats = {
+            'date': latest_date,
+            'total_attendees': (stats.get('total_adults') or 0) + (stats.get('total_youngs') or 0) + (stats.get('total_children') or 0),
+            'groups_attended': Attendance.objects.filter(date=latest_date, attended=True).count(),
+            'total_groups_in_report': Attendance.objects.filter(date=latest_date).count()
+        }
+
+    # --- Server Assistance Stats (for the most recent date and service with records) ---
+    latest_assistance = Assistance.objects.order_by('-date', '-service').first()
+    server_stats = {}
+    if latest_assistance:
+        latest_date = latest_assistance.date
+        latest_service = latest_assistance.service
+        
+        # Get all records for that specific date and service
+        latest_service_records = Assistance.objects.filter(date=latest_date, service=latest_service)
+        
+        server_stats = {
+            'date': latest_date,
+            'service': latest_assistance.get_service_display(),
+            'servers_attended': latest_service_records.filter(attended=True).count(),
+            'total_servers_in_report': latest_service_records.count()
+        }
+
+    context = {
+        'total_servers': total_servers,
+        'total_groups': total_groups,
+        'total_coordinators': total_coordinators,
+        'group_stats': group_stats,
+        'server_stats': server_stats,
+    }
+    return render(request, 'anfitriones/summary.html', context)

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block body %}
+<h1>Confirmar Eliminación</h1>
+<p>¿Estás seguro de que quieres eliminar la asignación del grupo "<strong>{{ assignment.group.name }}</strong>" al coordinador "<strong>{{ assignment.coordinator.name }} {{ assignment.coordinator.surname }}</strong>"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+    <a href="{% url 'jap:groupcoordinator_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

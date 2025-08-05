@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h2>¿Seguro que quieres borrar "{{ group_obj.name }}"?</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, borrar</button>
+        <a href="{% url 'jap:child_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+{% endblock %}
