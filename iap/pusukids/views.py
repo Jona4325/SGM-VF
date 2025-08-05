@@ -6,8 +6,10 @@ from .models import (
 )
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+
 from datetime import date
 from .forms import (
     CoordinatorForm, GroupForm, ServerForm, GroupageForm, ChildForm,

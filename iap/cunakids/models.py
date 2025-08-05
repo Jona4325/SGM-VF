@@ -18,7 +18,7 @@ class coordinator(models.Model):
         null=True,
         blank=True,
         verbose_name=_("user account"),
-        related_name='cunakids_coordinator', # related_name to avoid clashes
+        related_name='cunakids_staff', # related_name to avoid clashes
         help_text=_("Link this coordinator profile to a Django user account to allow login.")
     )
     name = models.CharField(_("name"), max_length=128)

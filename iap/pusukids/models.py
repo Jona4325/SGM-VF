@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 from datetime import date
 # Create your models here.
 
@@ -11,10 +12,19 @@ def validate_date(value):
     
 
 class coordinator(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("user account"),
+        related_name='pusukids_staff', # related_name to avoid clashes
+        help_text=_("Link this coordinator profile to a Django user account to allow login.")
+    )
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)     
     def __str__(self):
-        return self.name
+        return f"{self.name} {self.surname}"
 
 
 class group(models.Model):
