@@ -18,6 +18,8 @@ def user_app_permissions(request):
         'can_access_jap': False,
         'can_access_multimedia': False,
         'can_access_pusukids': False,
+        'can_access_pequediks': False,
+        'can_access_jpro': False,
     }
 
     # Los superusuarios siempre tienen acceso a todo.
@@ -37,5 +39,13 @@ def user_app_permissions(request):
         # Permiso para Pusukids
         if user.groups.filter(name='pusukids_staff').exists():
             app_perms['can_access_pusukids'] = True
+        
+        # Permiso para Pequediks
+        if user.groups.filter(name='pequediks_staff').exists():
+            app_perms['can_access_pequediks'] = True    
+        
+        # Permiso para Jpro
+        if user.groups.filter(name='jpro_staff').exists():
+            app_perms['can_access_jpro'] = True      
 
     return {'app_perms': app_perms}

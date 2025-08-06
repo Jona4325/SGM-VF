@@ -121,7 +121,28 @@
             </div>
         </div>
         {% endif %}
-
+        {% if app_perms.can_access_pequediks %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Pequekids</h5>
+                    <p class="card-text">Gestión de niños de 2 a 4 años, asistencias y coordinadores del ministerio de niños.</p>
+                    <a href="{% url 'pequediks:index' %}" class="btn btn-primary mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if app_perms.can_access_jpro %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Jóvenes profesionales</h5>
+                    <p class="card-text">Gestión de jóvenes profesionales, asistencias y coordinadores del ministerio de jóvenes profesionales.</p>
+                    <a href="{% url 'jpro:index' %}" class="btn btn-primary mt-auto">Acceder</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

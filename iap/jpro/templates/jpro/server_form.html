@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ form_title|default:"Formulario de Servidor" }}{% endblock %}
+
+{% block body %}
+<h1>{{ form_title|default:"Formulario de Servidor" }}</h1>
+
+<form method="post">
+    {% csrf_token %} {# ¡Importante para seguridad! #}
+
+    {{ form.as_p }} {# Renderiza el formulario como párrafos, puedes personalizarlo más #}
+    
+
+    <button type="submit" class="btn btn-success">{{ submit_button_text|default:"Guardar" }}</button>
+    <a href="{% url 'jpro:server_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

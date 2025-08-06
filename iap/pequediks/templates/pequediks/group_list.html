@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Grupos{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">Lista de Grupos</h1>
+        <a class="btn btn-primary" href="{% url 'pequediks:group_create' %}">
+          Crear Nuevo Grupo
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for group in groups %}
+            <tr>
+              <td>{{ group.name }}</td>
+              <td>{{ group.description }}</td>
+              <td>
+                <a class="btn btn-warning btn-sm" href="{% url 'pequediks:group_update' group.pk %}" title="Editar"><i class="fas fa-edit"></i></a>
+                <a href="{% url 'pequediks:group_delete' group.pk %}" class="btn btn-danger btn-sm" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-center">No hay grupos registrados.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <a href="{% url 'pequediks:index' %}" class="btn btn-secondary">Volver al Inicio</a>
+    </div>
+{% endblock %}

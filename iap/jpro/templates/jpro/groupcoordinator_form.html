@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action_title|default:action|add:" Asignación" }}{% endblock %}
+
+{% block body %}
+<h1>{{ action_title|default:action|add:" Asignación Grupo-Coordinador" }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label for="{{ form.group.id_for_label }}" class="form-label">{{ form.group.label }}</label>
+        {{ form.group }}
+        {% if form.group.errors %}
+            <div class="invalid-feedback d-block">
+                {{ form.group.errors.as_text }}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label for="{{ form.coordinator.id_for_label }}" class="form-label">{{ form.coordinator.label }}</label>
+        {{ form.coordinator }}
+        {% if form.coordinator.errors %}
+            <div class="invalid-feedback d-block">
+                {{ form.coordinator.errors.as_text }}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {{ form.non_field_errors.as_ul }}
+        </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-success">{{ action }}</button>
+    <a href="{% url 'jpro:groupcoordinator_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

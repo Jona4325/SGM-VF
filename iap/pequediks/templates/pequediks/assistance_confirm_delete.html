@@ -1,0 +1,27 @@
+{% extends 'base.html' %} {# Ajusta si tu base se llama diferente #}
+
+{% block title %}Confirmar Eliminación de Asistencia{% endblock %}
+
+{% block body %}
+<h1>Confirmar Eliminación</h1>
+
+{% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+{% endif %}
+
+<p>¿Estás seguro de que quieres eliminar el registro de asistencia de:</p>
+<ul>
+    <li><strong>Niño/a:</strong> {{ assistance.child.name }} {{ assistance.child.surname }}</li>
+    <li><strong>Fecha:</strong> {{ assistance.date.date|date:"Y-m-d" }}</li>
+    <li><strong>Grupo:</strong> {{ assistance.group.name }}</li>
+</ul>
+<p>Esta acción no se puede deshacer.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+    <a href="{% url 'pequediks:assistance_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

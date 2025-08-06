@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'jap',
     'multimedia',
     'pusukids',
+    'pequediks.apps.PequediksConfig',
+    'jpro',
     'account',
 ]
 

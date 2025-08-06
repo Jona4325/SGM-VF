@@ -1,0 +1,12 @@
+
+{% extends 'base.html' %}
+
+{% block body %}
+    <h1>{{ action }} Coordinador</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <a href="{% url 'jpro:coordinator_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+{% endblock %}
