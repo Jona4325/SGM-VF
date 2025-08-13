@@ -2,7 +2,7 @@
 from django.urls import path
 from . import views
 
-app_name = 'academia'  # Namespace para las URLs de esta aplicación
+app_name = 'iap.academia'  # Namespace para las URLs de esta aplicación
 
 urlpatterns = [
     path('', views.index, name='index'),  # URL para la página principal de academia
