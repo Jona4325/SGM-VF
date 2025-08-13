@@ -47,18 +47,18 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
 
     # Local Apps
-    'academia',
-    'alabanza',
-    'anfitriones',
-    'cunakids',
-    'discipulado',
-    'encuentros',
-    'jap',
-    'multimedia',
-    'pusukids',
-    'pequediks.apps.PequediksConfig',
-    'jpro',
-    'account',
+    'iap.academia',
+    'iap.alabanza',
+    'iap.anfitriones',
+    'iap.cunakids',
+    'iap.discipulado',
+    'iap.encuentros',
+    'iap.jap',
+    'iap.multimedia',
+    'iap.pusukids',
+    'iap.pequediks.apps.PequediksConfig',
+    'iap.jpro',
+    'iap.account',
 ]
 
 # settings.py
