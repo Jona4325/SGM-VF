@@ -1,34 +1,8 @@
-### OSX ###
-DS_Store
-AppleDouble
-LSOverride
-
-# Icon must end with two \r
-Icon
-
-# Thumbnails
-_*
-
-# Files that might appear on external disk
-Spotlight-V100
-Trashes
-
-# Directories potentially created on remote AFP share
-AppleDB
-AppleDesktop
-Network Trash Folder
-Temporary Items
-apdisk
-
 ### Python ###
-# Byte-compiled / optimized / DLL files
 _pycache_/
 *.py[cod]
-
-# C extensions
+__pycache__/
 *.so
-
-# Distribution / packaging
 Python
 env/
 build/
@@ -42,48 +16,42 @@ parts/
 sdist/
 var/
 *.egg-info/
-installed.cfg
+.installed.cfg
 *.egg
-
-# PyInstaller
-# Usually these files are written by a python script from a template
-# before PyInstaller builds the exe, so as to inject date/other infos into it
 *.manifest
 *.spec
-
-# Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
-# Unit test / coverage reports
 htmlcov/
 tox/
-coverage
-cache
+.coverage
+.cache
 nosetests.xml
 coverage.xml
-
-# Translations
 *.mo
 *.pot
-
-# Sphinx documentation
 docs/_build/
-
-# PyBuilder
 target/
 
 ### Django ###
 *.log
-*.pot
-*.pyc
-_pycache_/
 local_settings.py
-env
-# Ignorar pycache y archivos compilados
-_pycache_/
-*.py[cod]
 
-# Ignorar entorno virtual
+### Virtual Environment ###
 venv/
-git rm --cached -r venv/
+env/
+ENV/
+
+### OS X ###
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
