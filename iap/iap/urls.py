@@ -22,17 +22,17 @@ def home(request):
 urlpatterns = [
     path('admin/', admin.site.urls), # El sitio de admin original
     path('my-admin/', debug_admin_site.urls), # El sitio de admin de depuración
-    path('academia/', include(('iap.academia.urls', 'academia'), namespace='academia')), 
-    path('alabanza/', include(('iap.alabanza.urls', 'alabanza'), namespace='alabanza')),
-    path('anfitriones/', include(('iap.anfitriones.urls', 'anfitriones'), namespace='anfitriones')),
-    path('cunakids/', include(('iap.cunakids.urls', 'cunakids'), namespace='cunakids')),
-    path('discipulado/', include(('iap.discipulado.urls', 'discipulado'), namespace='discipulado')),
-    path('encuentros/', include('iap.encuentros.urls')),  # Si no usas namespace, puedes dejar así
-    path('jap/', include('iap.jap.urls')),
-    path('jpro/', include('iap.jpro.urls')),
-    path('multimedia/', include('iap.multimedia.urls')),
-    path('pusukids/', include(('iap.pusukids.urls', 'pusukids'), namespace='pusukids')),    
-    path('pequediks/', include(('iap.pequediks.urls', 'pequediks'), namespace='pequediks')),
-    path('account/', include('iap.account.urls', namespace='account')),
+    path('academia/', include(('academia.urls', 'academia'), namespace='academia')), 
+    path('alabanza/', include(('alabanza.urls', 'alabanza'), namespace='alabanza')),
+    path('anfitriones/', include(('anfitriones.urls', 'anfitriones'), namespace='anfitriones')),
+    path('cunakids/', include(('cunakids.urls', 'cunakids'), namespace='cunakids')),
+    path('discipulado/', include(('discipulado.urls', 'discipulado'), namespace='discipulado')),
+    path('encuentros/', include('encuentros.urls')),  # Si no usas namespace, puedes dejar así
+    path('jap/', include('jap.urls')),
+    path('jpro/', include('jpro.urls')),
+    path('multimedia/', include('multimedia.urls')),
+    path('pusukids/', include(('pusukids.urls', 'pusukids'), namespace='pusukids')),    
+    path('pequediks/', include(('pequediks.urls', 'pequediks'), namespace='pequediks')),
+    path('account/', include('account.urls', namespace='account')),
     path('', home, name='home'),
 ]
