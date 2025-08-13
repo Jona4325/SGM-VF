@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
 
     # Local Apps
-    'academia',
+    'iap.academia',
     'alabanza',
     'anfitriones',
     'cunakids',
