@@ -1,1 +1,1 @@
-web: gunicorn iap.iap.wsgi
+web: gunicorn iap.wsgi:application
