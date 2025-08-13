@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'pequediks.apps.PequediksConfig',
     'jpro',
     'account',
-    'iap',
 ]
 
 # settings.py
