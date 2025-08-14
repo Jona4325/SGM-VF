@@ -30,7 +30,6 @@ urlpatterns = [
     path('encuentros/', include('encuentros.urls')),  # Si no usas namespace, puedes dejar así
     path('jap/', include('jap.urls')),
     path('jpro/', include('jpro.urls')),
-    path('multimedia/', include('multimedia.urls')),
     path('pusukids/', include(('pusukids.urls', 'pusukids'), namespace='pusukids')),    
     path('pequediks/', include(('pequediks.urls', 'pequediks'), namespace='pequediks')),
     path('account/', include('account.urls', namespace='account')),
