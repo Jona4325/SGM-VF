@@ -98,18 +98,6 @@
         </div>
         {% endif %}
 
-        {% if app_perms.can_access_multimedia %}
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">Multimedia</h5>
-                    <p class="card-text">Gestión del equipo y recursos de multimedia.</p>
-                    <a href="{% url 'multimedia:index' %}" class="btn btn-primary mt-auto">Acceder</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
         {% if app_perms.can_access_pusukids %}
         <div class="col">
             <div class="card h-100">
