@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'discipulado',
     'encuentros',
     'jap',
-    'multimedia',
     'pusukids',
     'pequediks.apps.PequediksConfig',
     'jpro',
