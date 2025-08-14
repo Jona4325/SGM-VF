@@ -1,0 +1,20 @@
+{% extends 'base_generic.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1 class="display-4 text-center">Bienvenido a la Iglesia</h1>
+                <p class="lead text-center">Nos alegra que estés con nosotros. Aquí puedes acceder a las diferentes secciones de nuestra comunidad:</p>
+
+                <!-- Acciones del usuario -->
+                <div class="d-grid gap-2">
+                    <a href="{% url 'account:profile' %}" class="btn btn-primary">Mi Perfil</a>
+                    <a href="{% url 'eventos:listar' %}" class="btn btn-secondary">Eventos de la Iglesia</a>
+                    <a href="{% url 'grupo:grupos' %}" class="btn btn-info">Grupos Pequeños</a>
+                    <a href="{% url 'account:logout' %}" class="btn btn-danger">Cerrar sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
