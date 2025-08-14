@@ -10,3 +10,5 @@ setuptools==80.8.0
 sqlparse==0.5.3
 tzdata==2025.1
 whitenoise==6.9.0
+dj_database_url==0.5.0
+mysqlclient==2.1.1
