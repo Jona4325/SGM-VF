@@ -1,4 +1,4 @@
-import os
+import os 
 from pathlib import Path
 from django.contrib.messages import constants as messages
 import dj_database_url
@@ -83,6 +83,11 @@ DATABASES = {
     'default': dj_database_url.config(default=os.environ.get('JAWSDB_URL'))
 }
 
+# MySQL Strict Mode configuration
+DATABASES['default']['OPTIONS'] = {
+    'sql_mode': 'STRICT_TRANS_TABLES'
+}
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -115,7 +120,7 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
+# Authentication URLs
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'account:login'
 LOGIN_URL = 'account:login'
-
