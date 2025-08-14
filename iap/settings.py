@@ -78,16 +78,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iap.wsgi.application'
 
-# Configuración de base de datos utilizando la URL de Heroku (JAWSDB_URL)
 DATABASES = {
-    'default': dj_database_url.config(
-        default='mysql://yg2xf5szlejafkvm:ne371d1hr8dntcb0@lgg2gx1ha7yp2w0k.cbetxkdyhwsb.us-east-1.rds.amazonaws.com:3306/c062a42y0x8epcby'
-    )
-}
-
-# Activar el modo estricto para evitar problemas de integridad de datos
-DATABASES['default']['OPTIONS'] = {
-    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+    'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
 }
 
 # Password validation
