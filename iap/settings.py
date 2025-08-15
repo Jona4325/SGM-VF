@@ -121,3 +121,5 @@ MESSAGE_TAGS = {
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'account:login'
 LOGIN_URL = 'account:login'
+
+-----------------------------
