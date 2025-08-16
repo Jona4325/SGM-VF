@@ -78,12 +78,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iap.wsgi.application'
 
-# Database configuration to use PostgreSQL with Heroku
+# Base de datos para desarrollo local
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')  # Heroku provides this environment variable
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",  # Usar SQLite si no está configurado en Heroku
+    }
 }
+
+# Reemplaza la base de datos por la de Heroku si está disponible
+DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL', None), conn_max_age=600)
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
