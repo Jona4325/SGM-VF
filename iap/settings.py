@@ -78,16 +78,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iap.wsgi.application'
 
-# Base de datos para desarrollo local
+# Configuración de la base de datos para local (SQLite) y Heroku (PostgreSQL)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",  # Usar SQLite si no está configurado en Heroku
+        'ENGINE': 'django.db.backends.sqlite3',  # Utiliza SQLite localmente por defecto
+        'NAME': BASE_DIR / 'db.sqlite3',  # Ruta de la base de datos SQLite
     }
 }
 
-# Reemplaza la base de datos por la de Heroku si está disponible
-DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL', None), conn_max_age=600)
+# Si DATABASE_URL está disponible (en Heroku), usa PostgreSQL
+if os.environ.get('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'), conn_max_age=600)
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
