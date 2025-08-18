@@ -2,13 +2,19 @@ import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
 import dj_database_url
+import dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-av3#%#$ip8&4j0wr^3)2=etf)&znch(1lqr^u%!-hihx#^%^q0'
-DEBUG = True
+# Cargar variables de entorno desde el archivo .env
+# Esto debe estar al principio para que las variables estén disponibles.
+dotenv.load_dotenv(os.path.join(BASE_DIR, '.env'))
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY')
+
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'sgm-5afff7dfce13.herokuapp.com',  # Dominio de Heroku
@@ -78,10 +84,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iap.wsgi.application'
 
-# Database configuration to use PostgreSQL with Heroku
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')  # Heroku provides this environment variable
+        default=os.environ.get('DATABASE_URL') 
     )
 }
 

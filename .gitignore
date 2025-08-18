@@ -1,57 +1,45 @@
-### Python ###
-_pycache_/
-*.py[cod]
-__pycache__/
-*.so
-Python
+# Archivos de entorno y credenciales
+# No incluyas nunca archivos con secretos (API keys, contraseñas de BD) en el repositorio.
+.env
+local_settings.py
+# Entornos virtuales de Python
+# Ignora el directorio del entorno virtual para evitar subir cientos de archivos de dependencias.
 env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-*.manifest
-*.spec
-pip-log.txt
-pip-delete-this-directory.txt
-htmlcov/
-tox/
-.coverage
+venv/
+.venv/
+# Archivos compilados y de caché de Python
+# Estos archivos se generan automáticamente y no deben ser versionados.
+__pycache__/
+*.py[cod]
+*.so
 .cache
+# Artefactos de empaquetado y distribución
+build/
+dist/
+sdist/
+*.egg-info/
+*.egg
+# Archivos de Django
+# La base de datos local y los archivos estáticos/media generados no deben estar en el repo.
+db.sqlite3
+/staticfiles/
+/media/
+*.log
+# Archivos de testing y cobertura
+.coverage
+htmlcov/
+.tox/
 nosetests.xml
 coverage.xml
+
+# Archivos de internacionalización
 *.mo
-*.pot
-docs/_build/
-target/
+# Archivos de sistema operativo (macOS, Windows)
+Thumbs.db
 
-### Django ###
-*.log
-local_settings.py
-
-### Virtual Environment ###
-venv/
-env/
-ENV/
-
-### OS X ###
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-.Spotlight-V100
-.Trashes
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
+# Archivos de configuración de IDEs y editores
+# Ayuda a que cada desarrollador use su configuración sin afectar a los demás.
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
