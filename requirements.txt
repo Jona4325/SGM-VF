@@ -11,9 +11,5 @@ setuptools==80.8.0
 sqlparse==0.5.3
 tzdata==2025.1
 whitenoise==6.9.0
-<<<<<<< HEAD
-
-=======
 mysqlclient==2.1.1
 psycopg2
->>>>>>> 3b3efc82a443b84d4c82a0dc5df48120abeca4e8

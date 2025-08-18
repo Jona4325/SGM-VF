@@ -84,17 +84,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'iap.wsgi.application'
 
-<<<<<<< HEAD
 
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL') 
-=======
-# Configurar la base de datos para usar Heroku PostgreSQL
-DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://ucncnstg7vkkqm:pfee3fed6cd1df9a73ed41ed32f51ac66e65ab4a6382291193b3c017dcd48dd8a@c334eusne9il74.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d7u9cp8qsf24gg'
->>>>>>> 3b3efc82a443b84d4c82a0dc5df48120abeca4e8
     )
 }
 
