@@ -19,11 +19,11 @@ from .forms import (
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Q
 import traceback # Para debug si es necesario
 
 # Create your views here.
-@login_required
+
 def calculated_age(born):
     if not born: return None
     today = date.today()
@@ -177,42 +177,41 @@ class ServerDeleteView(LoginRequiredMixin,DeleteView):
     context_object_name = 'server'
     success_url = reverse_lazy('pusukids:server_list') # Redirige a la lista después de borrar
 
-# Vistas generadas con Gemini para el CRUD de GroupAge
-@login_required
-def groupage_list(request):
-    groupages = groupage.objects.all()
-    return render(request, 'pusukids/groupage_list.html', {'groupages': groupages})
+# --- Vistas para el CRUD de GroupAge (Refactorizadas a CBV) ---
+class GroupageListView(LoginRequiredMixin, ListView):
+    model = groupage
+    template_name = 'pusukids/groupage_list.html'
+    context_object_name = 'groupages'
 
-@login_required
-def groupage_create(request):
-    if request.method == 'POST':
-        form = GroupageForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('pusukids:groupage_list')
-    else:
-        form = GroupageForm()
-    return render(request, 'pusukids/groupage_form.html', {'form': form, 'action': 'Crear'})
+class GroupageCreateView(LoginRequiredMixin, CreateView):
+    model = groupage
+    form_class = GroupageForm
+    template_name = 'pusukids/groupage_form.html'
+    success_url = reverse_lazy('pusukids:groupage_list')
 
-@login_required
-def groupage_update(request, pk):
-    groupage_obj = get_object_or_404(groupage, pk=pk)
-    if request.method == 'POST':
-        form = GroupageForm(request.POST, instance=groupage_obj)
-        if form.is_valid():
-            form.save()
-            return redirect('pusukids:groupage_list')
-    else:
-        form = GroupageForm(instance=groupage_obj)
-    return render(request, 'pusukids/groupage_form.html', {'form': form, 'action': 'Editar'})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Crear'
+        context['action_title'] = 'Registrar Nuevo Grupo de Edad'
+        return context
 
-@login_required
-def groupage_delete(request, pk):
-    groupage_obj = get_object_or_404(groupage, pk=pk)
-    if request.method == 'POST':
-        groupage_obj.delete()
-        return redirect('pusukids:groupage_list')
-    return render(request, 'pusukids/groupage_confirm_delete.html', {'groupage': groupage_obj})
+class GroupageUpdateView(LoginRequiredMixin, UpdateView):
+    model = groupage
+    form_class = GroupageForm
+    template_name = 'pusukids/groupage_form.html'
+    success_url = reverse_lazy('pusukids:groupage_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['action'] = 'Actualizar'
+        context['action_title'] = f'Editar Grupo de Edad: {self.object.name}'
+        return context
+
+class GroupageDeleteView(LoginRequiredMixin, DeleteView):
+    model = groupage
+    template_name = 'pusukids/groupage_confirm_delete.html'
+    context_object_name = 'groupage'
+    success_url = reverse_lazy('pusukids:groupage_list')
 
 # --- Vistas para el CRUD de Kid ---
 @login_required
@@ -221,22 +220,41 @@ def child_list(request):
     # Por defecto, mostrar solo los niños activos.
     # Se puede pasar un parámetro GET ?status=all para ver todos, o ?status=promovido.
     status_filter = request.GET.get('status', 'activo')
+    search_query = request.GET.get('q', '')
+    groupage_filter_id = request.GET.get('groupage', '')
 
     if status_filter == 'all':
-        children_list = child.objects.all().order_by('surname', 'name')
+        children_list = child.objects.all()
     else:
         # Filtra por el estado solicitado ('activo', 'promovido', etc.)
-        children_list = child.objects.filter(status=status_filter).order_by('surname', 'name')
+        children_list = child.objects.filter(status=status_filter)
+        
+    # Aplicar filtro de búsqueda si existe
+    if search_query:
+        children_list = children_list.filter(
+            Q(name__icontains=search_query) | Q(surname__icontains=search_query)
+        )
+        # Aplicar filtro de grupo de edad si existe
+    if groupage_filter_id and groupage_filter_id.isdigit():
+        children_list = children_list.filter(groupage_id=groupage_filter_id)
+
+    children_list = children_list.order_by('surname', 'name')    
 
     # Paginación
     paginator = Paginator(children_list, 10) # 10 niños por página
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    
+    # Obtener todos los grupos de edad para los botones de filtro
+    all_groupages = groupage.objects.all().order_by('name')
 
     # La propiedad @property calculated_age estará disponible en cada objeto 'c' dentro del template.
     return render(request, 'pusukids/child_list.html', {
         'page_obj': page_obj, 
-        'current_status': status_filter
+        'current_status': status_filter,
+        'search_query': search_query,
+        'all_groupages': all_groupages,
+        'current_groupage_id': int(groupage_filter_id) if groupage_filter_id and groupage_filter_id.isdigit() else None,
     })
 
 @login_required

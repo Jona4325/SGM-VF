@@ -46,6 +46,11 @@ def user_app_permissions(request):
         
         # Permiso para Jpro
         if user.groups.filter(name='jpro_staff').exists():
-            app_perms['can_access_jpro'] = True      
+            app_perms['can_access_jpro'] = True 
+                 
+            # Permiso para Jap
+        if user.groups.filter(name='jap_staff').exists():
+            app_perms['can_access_jap'] = True      
+
 
     return {'app_perms': app_perms}

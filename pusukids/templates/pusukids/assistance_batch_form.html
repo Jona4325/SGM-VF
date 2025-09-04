@@ -2,8 +2,10 @@
 
 {% block body %}
 <div class="container mt-4">
-    <h2>{{ action_title|default:"Registrar Asistencia Grupal" }}</h2>
-    <hr>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">{{ action_title|default:"Registrar Asistencia Grupal" }}</h2>
+        <a href="{% url 'pusukids:index' %}" class="btn btn-secondary">Regresar al Menú Principal</a>
+    </div>
 
     <form method="post">
         {% csrf_token %}

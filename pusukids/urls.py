@@ -26,10 +26,11 @@ urlpatterns = [
     path('servers/<int:pk>/delete/', views.ServerDeleteView.as_view(), name='server_delete'),
 
     # Rutas para groupage
-    path('groupages/', views.groupage_list, name='groupage_list'),
-    path('groupages/create/', views.groupage_create, name='groupage_create'),
-    path('groupages/<int:pk>/update/', views.groupage_update, name='groupage_update'),
-    path('groupages/<int:pk>/delete/', views.groupage_delete, name='groupage_delete'),
+    # Reemplaza las antiguas URLs de groupage por estas:
+    path('groupages/', views.GroupageListView.as_view(), name='groupage_list'),
+    path('groupages/create/', views.GroupageCreateView.as_view(), name='groupage_create'),
+    path('groupages/<int:pk>/update/', views.GroupageUpdateView.as_view(), name='groupage_update'),
+    path('groupages/<int:pk>/delete/', views.GroupageDeleteView.as_view(), name='groupage_delete'),
 
     # --- URLs para Child --- (Actualizadas)
     path('children/', views.child_list, name='child_list'), # <-- Cambiado

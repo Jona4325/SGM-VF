@@ -3,12 +3,16 @@
 {% block title %}Asignaciones Grupo-Coordinador{% endblock %}
 
 {% block body %}
-<h1>Asignaciones Grupo-Coordinador</h1>
-<a href="{% url 'pusukids:groupcoordinator_create' %}" class="btn btn-primary mb-3">Asignar Coordinador a Grupo</a>
-
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Asignaciones Grupo-Coordinador</h1>
+    <div>
+        <a href="{% url 'pusukids:groupcoordinator_create' %}" class="btn btn-primary me-2">Asignar Coordinador a Grupo</a>
+        <a href="{% url 'pusukids:index' %}" class="btn btn-secondary">Regresar al Menú Principal</a>
+    </div>
+</div>
 {% if assignments %}
     <table class="table table-striped table-hover">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>Grupo</th>
                 <th>Coordinador(a)</th>

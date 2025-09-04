@@ -3,12 +3,16 @@
 {% block title %}Información Semanal{% endblock %}
 
 {% block body %}
-<h1>Información Semanal</h1>
-<a href="{% url 'pusukids:weekinfo_create' %}" class="btn btn-primary mb-3">Registrar Nueva Semana</a>
-
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Información Semanal</h1>
+    <div>
+        <a href="{% url 'pusukids:weekinfo_create' %}" class="btn btn-primary me-2">Registrar Nueva Semana</a>
+        <a href="{% url 'pusukids:index' %}" class="btn btn-secondary">Regresar al Menú Principal</a>
+    </div>
+</div>
 {% if weekinfos %}
 <table class="table table-striped table-hover table-sm">
-    <thead>
+    <thead class="table-dark">
         <tr>
             <th>Fecha</th>
             <th>Grupo</th>

@@ -114,16 +114,36 @@ class TeacherDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 # Vistas para Student
-class StudentListView(LoginRequiredMixin, SuperuserRequiredMixin, ListView):
+class StudentListView(ListView):
     model = Student
     template_name = 'academia/student_list.html'
     context_object_name = 'students'
-    paginate_by = 10
+    paginate_by = 10  # Por ejemplo, 10 estudiantes por página
+    
+    def get_queryset(self):
+        """
+        Sobrescribe el queryset para filtrar por el término de búsqueda.
+        """
+        queryset = super().get_queryset().order_by('surname', 'name')
+        # Obtiene el parámetro 'q' de la URL
+        search_query = self.request.GET.get('q', '')
+
+        if search_query:
+            # Filtra el queryset si hay un término de búsqueda
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) | Q(surname__icontains=search_query)
+            )
+        
+        return queryset
 
     def get_context_data(self, **kwargs):
+        """
+        Añade el término de búsqueda al contexto para que la plantilla lo use.
+        """
         context = super().get_context_data(**kwargs)
-        context['active_page'] = 'students'
-        context['page_title'] = 'Listado de Estudiantes'
+        context['page_title'] = 'Lista de Estudiantes'
+        # Pasa el término de búsqueda de vuelta a la plantilla
+        context['search_query'] = self.request.GET.get('q', '')
         return context
 
 class StudentDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):

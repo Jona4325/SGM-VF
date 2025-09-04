@@ -3,12 +3,16 @@
 {% block title %}Lista de Servidores{% endblock %}
 
 {% block body %}
-<h1>Lista de Servidores</h1>
-<a href="{% url 'pusukids:server_create' %}" class="btn btn-primary mb-3">Registrar Nuevo Servidor</a>
-
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Lista de Servidores</h1>
+    <div>
+        <a href="{% url 'pusukids:server_create' %}" class="btn btn-primary me-2">Registrar Nuevo Servidor</a>
+        <a href="{% url 'pusukids:index' %}" class="btn btn-secondary">Regresar al Menú Principal</a>
+    </div>
+</div>
 {% if servers %}
     <table class="table table-striped table-hover">
-        <thead>
+        <thead class="table-dark">
             <tr>
                 <th>Nombre</th>
                 <th>Apellido</th>

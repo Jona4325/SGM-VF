@@ -52,6 +52,14 @@ class GroupageForm(forms.ModelForm):
     class Meta:
         model = groupage
         fields = ['name', 'description']
+        labels = {
+            'name': 'Nombre',
+            'description': 'Descripción',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+        }
 
 
 class ChildForm(forms.ModelForm): # <-- Renombrada
