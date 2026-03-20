@@ -87,9 +87,10 @@ WSGI_APPLICATION = 'iap.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL') 
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',  # Usando SQLite como base de datos
+        'NAME': BASE_DIR / "db.sqlite3",  # Ruta al archivo de base de datos
+    }
 }
 
 
