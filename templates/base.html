@@ -51,7 +51,7 @@
             {% if user.is_authenticated and user.is_staff or user.is_superuser %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'admin:index' %}">
-                <i class="fas fa-user-shield"></i> Administracion
+                <i class="fas fa-user-shield"></i> Administraci&oacute;n
               </a>
             </li>
             {% endif %}
@@ -76,12 +76,12 @@
                 </li>
                 <li>
                   <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-user-graduate"></i> Jovenes
+                    <i class="fas fa-user-graduate"></i> J&oacute;venes
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-child"></i> Ninos
+                    <i class="fas fa-child"></i> Ni&ntilde;os
                   </a>
                 </li>
               </ul>
@@ -126,7 +126,7 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="fas fa-calendar-alt"></i> Planificacion
+                <i class="fas fa-calendar-alt"></i> Planificaci&oacute;n
               </a>
               <ul class="dropdown-menu" aria-labelledby="dropdownPlanificacion">
                 <li>
@@ -151,7 +151,7 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                <i class="fas fa-database"></i> Gestion de Datos
+                <i class="fas fa-database"></i> Gesti&oacute;n de Datos
               </a>
               <ul class="dropdown-menu" aria-labelledby="dropdownGestionDatos">
                 <li>
@@ -190,7 +190,7 @@
                 {% if user.is_staff or user.is_superuser %}
                 <li>
                   <a class="dropdown-item" href="{% url 'admin:index' %}">
-                    <i class="fas fa-user-shield me-2"></i>Administracion
+                    <i class="fas fa-user-shield me-2"></i>Administraci&oacute;n
                   </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -200,7 +200,7 @@
                   <form action="{% url 'account:logout' %}" method="post" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item">
-                      <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesion
+                      <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesi&oacute;n
                     </button>
                   </form>
                 </li>
@@ -209,7 +209,7 @@
             {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'account:login' %}">
-                <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesion
+                <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesi&oacute;n
               </a>
             </li>
             {% endif %}
