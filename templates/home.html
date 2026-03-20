@@ -8,11 +8,11 @@
     <div class="px-4 py-5 my-5 text-center">
         <h1 class="display-5 fw-bold">Bienvenido, {{ request.user.username }}</h1>
         <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">Selecciona la aplicaciÃ³n a la que deseas acceder.</p>
+            <p class="lead mb-4">Selecciona la aplicacion a la que deseas acceder.</p>
             {% if user.is_staff or user.is_superuser %}
             <div class="d-flex justify-content-center mt-4">
                 <a href="{% url 'admin:index' %}" class="btn btn-warning btn-lg px-4">
-                    <i class="fas fa-user-shield me-2"></i>Ir a AdministraciÃ³n
+                    <i class="fas fa-user-shield me-2"></i>Ir a Administracion
                 </a>
             </div>
             {% endif %}
@@ -20,13 +20,12 @@
     </div>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-
         {% if app_perms.can_access_cunakids %}
         <div class="col">
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Cuna Kids</h5>
-                    <p class="card-text">GestiÃ³n de niÃ±os, asistencias y coordinadores del ministerio de cuna.</p>
+                    <p class="card-text">Gestion de ninos, asistencias y coordinadores del ministerio de cuna.</p>
                     <a href="{% url 'cunakids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -38,7 +37,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Academia</h5>
-                    <p class="card-text">GestiÃ³n de cursos, estudiantes y profesores de la academia.</p>
+                    <p class="card-text">Gestion de cursos, estudiantes y profesores de la academia.</p>
                     <a href="{% url 'academia:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -50,7 +49,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Alabanza</h5>
-                    <p class="card-text">AdministraciÃ³n del ministerio de alabanza.</p>
+                    <p class="card-text">Administracion del ministerio de alabanza.</p>
                     <a href="{% url 'alabanza:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -62,7 +61,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Anfitriones</h5>
-                    <p class="card-text">CoordinaciÃ³n del equipo de anfitriones.</p>
+                    <p class="card-text">Coordinacion del equipo de anfitriones.</p>
                     <a href="{% url 'anfitriones:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -74,7 +73,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Discipulado</h5>
-                    <p class="card-text">Seguimiento y gestiÃ³n de grupos de discipulado.</p>
+                    <p class="card-text">Seguimiento y gestion de grupos de discipulado.</p>
                     <a href="{% url 'discipulado:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -86,7 +85,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Encuentros</h5>
-                    <p class="card-text">OrganizaciÃ³n de encuentros y retiros.</p>
+                    <p class="card-text">Organizacion de encuentros y retiros.</p>
                     <a href="{% url 'encuentros:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -98,7 +97,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">JAP</h5>
-                    <p class="card-text">Ministerio de JÃ³venes Adultos Profesionales.</p>
+                    <p class="card-text">Ministerio de Jovenes Adultos Profesionales.</p>
                     <a href="{% url 'jap:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -110,7 +109,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Pusukids</h5>
-                    <p class="card-text">GestiÃ³n de niÃ±os, asistencias y coordinadores del ministerio de niÃ±os.</p>
+                    <p class="card-text">Gestion de ninos, asistencias y coordinadores del ministerio de ninos.</p>
                     <a href="{% url 'pusukids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -122,7 +121,7 @@
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Pequekids</h5>
-                    <p class="card-text">GestiÃ³n de niÃ±os de 2 a 4 aÃ±os, asistencias y coordinadores del ministerio de niÃ±os.</p>
+                    <p class="card-text">Gestion de ninos de 2 a 4 anos, asistencias y coordinadores del ministerio de ninos.</p>
                     <a href="{% url 'pequediks:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -133,8 +132,8 @@
         <div class="col">
             <div class="card h-100">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">JÃ³venes profesionales</h5>
-                    <p class="card-text">GestiÃ³n de jÃ³venes profesionales, asistencias y coordinadores del ministerio de jÃ³venes profesionales.</p>
+                    <h5 class="card-title">Jovenes profesionales</h5>
+                    <p class="card-text">Gestion de jovenes profesionales, asistencias y coordinadores del ministerio de jovenes profesionales.</p>
                     <a href="{% url 'jpro:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
