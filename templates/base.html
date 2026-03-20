@@ -59,6 +59,13 @@
                 <i class="fas fa-home"></i> Inicio
               </a>
             </li>
+            {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'admin:index' %}">
+                <i class="fas fa-user-shield"></i> AdministraciÃ³n
+              </a>
+            </li>
+            {% endif %}
 
             {% if user.is_superuser or not user.teacher %}
             <!-- SECCIÓN: Datos Maestros -->
