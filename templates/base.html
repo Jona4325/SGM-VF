@@ -219,12 +219,20 @@
                     {{ membership.tenant.name }}
                   </a>
                 </li>
-                {% endfor %}
-                <li><hr class="dropdown-divider"></li>
-                {% endif %}
-                <li>
-                  <form action="{% url 'account:logout' %}" method="post" class="d-inline">
-                    {% csrf_token %}
+                  {% endfor %}
+                 <li><hr class="dropdown-divider"></li>
+                  {% endif %}
+                  {% if user.is_staff or user.is_superuser %}
+                  <li>
+                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                      <i class="fas fa-user-shield me-2"></i>AdministraciÃ³n
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  {% endif %}
+                  <li>
+                    <form action="{% url 'account:logout' %}" method="post" class="d-inline">
+                      {% csrf_token %}
                     <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</button>
                   </form>
                 </li>
