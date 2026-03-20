@@ -1,25 +1,29 @@
 from django.db import models
+from account.tenant import TenantAwareModel
 
 # Create your models here.
 
-class Coordinator(models.Model):
+class Coordinator(TenantAwareModel):
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
     def __str__(self):
         return f"{self.name} {self.surname}"
 
     class Meta:
-        unique_together = ('name', 'surname')
+        unique_together = ('tenant', 'name', 'surname')
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=16, unique=True)
+class Group(TenantAwareModel):
+    name = models.CharField(max_length=16)
     description = models.CharField(max_length=64)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('tenant', 'name')
 """  """
-class Server(models.Model):
+class Server(TenantAwareModel):
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
     coordinator = models.ForeignKey(Coordinator, on_delete=models.PROTECT)
@@ -29,17 +33,20 @@ class Server(models.Model):
         return f"{self.name} {self.surname}"
 
     class Meta:
-        unique_together = ('name', 'surname')
+        unique_together = ('tenant', 'name', 'surname')
 
-class Ministry(models.Model):
-    name = models.CharField(max_length=16, unique=True)
+class Ministry(TenantAwareModel):
+    name = models.CharField(max_length=16)
     description = models.CharField(max_length=64)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('tenant', 'name')
     
 
-class Assistance(models.Model):
+class Assistance(TenantAwareModel):
     class ServiceChoices(models.TextChoices):
         PRIMERO = 'PRI', 'Primero'
         SEGUNDO = 'SEG', 'Segundo'
@@ -59,9 +66,9 @@ class Assistance(models.Model):
          return f"{self.server} - {self.date} ({self.get_service_display()})"
 
     class Meta:
-        unique_together = ('server', 'date', 'service')
+        unique_together = ('tenant', 'server', 'date', 'service')
 
-class Attendance(models.Model):
+class Attendance(TenantAwareModel):
     """Modelo para registrar la asistencia y estadísticas de un grupo en una fecha."""
     coordinator = models.ForeignKey(Coordinator, on_delete=models.PROTECT)
     group = models.ForeignKey(Group, on_delete=models.PROTECT)

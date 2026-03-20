@@ -208,6 +208,20 @@
                 <i class="fas fa-user-circle me-1"></i> Hola, {{ user.username }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                {% if current_tenant %}
+                <li><h6 class="dropdown-header">Tenant activo: {{ current_tenant.name }}</h6></li>
+                {% endif %}
+                {% if tenant_memberships|length > 1 %}
+                <li><h6 class="dropdown-header">Cambiar tenant</h6></li>
+                {% for membership in tenant_memberships %}
+                <li>
+                  <a class="dropdown-item {% if current_tenant and membership.tenant_id == current_tenant.id %}active{% endif %}" href="{% url 'account:switch-tenant' membership.tenant_id %}">
+                    {{ membership.tenant.name }}
+                  </a>
+                </li>
+                {% endfor %}
+                <li><hr class="dropdown-divider"></li>
+                {% endif %}
                 <li>
                   <form action="{% url 'account:logout' %}" method="post" class="d-inline">
                     {% csrf_token %}

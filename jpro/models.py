@@ -1,62 +1,70 @@
-from django.db import models
-from django.core.exceptions import ValidationError
 from datetime import date
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models
 from django.utils.translation import gettext_lazy as _
-# Create your models here. 
+
+from account.tenant import TenantAwareModel
+
 
 def validate_date(value):
     try:
-        value.strftime('%Y-%m-%d')  # Forzar validación
+        value.strftime('%Y-%m-%d')
     except ValueError as e:
         raise ValidationError(str(e))
 
-class coordinator(models.Model):
+
+class coordinator(TenantAwareModel):
     user = models.OneToOneField(
         User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name=_("user account"),
-        related_name='jpro_staff', # related_name to avoid clashes
+        related_name='jpro_staff',
         help_text=_("Link this coordinator profile to a Django user account to allow login.")
     )
     name = models.CharField(_("name"), max_length=128)
     surname = models.CharField(_("surname"), max_length=128)
-    # Add other fields like email, phone, etc. as needed
 
     def __str__(self):
         return f"{self.name} {self.surname}"
 
 
-class group(models.Model):
-    name = models.CharField(max_length=16, unique=True)
+class group(TenantAwareModel):
+    name = models.CharField(max_length=16)
     description = models.CharField(max_length=64)
-    
+
+    class Meta:
+        unique_together = [('tenant', 'name')]
+
     def __str__(self):
         return self.name
 
-class server(models.Model):
-    name = models.CharField(max_length=128, unique=True)
+
+class server(TenantAwareModel):
+    name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
     coordinator = models.ForeignKey(coordinator, on_delete=models.PROTECT)
     group = models.ForeignKey(group, on_delete=models.PROTECT)
-    
-    def __str__(self):
-        return self.name
-    
+
+    class Meta:
+        unique_together = [('tenant', 'name')]
+
     def __str__(self):
         return self.name
 
-class child(models.Model):
+
+class child(TenantAwareModel):
     STATUS_CHOICES = [
         ('activo', 'Activo'),
         ('promovido', 'Promovido'),
     ]
-    name = models.CharField(max_length=128, unique=True)
+    name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
-    birthday = models.DateField(validators=[validate_date]) # El campo clave a probar
-    parent_name = models.CharField(max_length=128, blank=True) # Hacemos algunos opcionales
+    birthday = models.DateField(validators=[validate_date])
+    parent_name = models.CharField(max_length=128, blank=True)
     contact_phone = models.CharField(max_length=16, blank=True)
     status = models.CharField(
         max_length=10,
@@ -64,6 +72,9 @@ class child(models.Model):
         default='activo',
         verbose_name='Estado'
     )
+
+    class Meta:
+        unique_together = [('tenant', 'name')]
 
     @property
     def calculated_age(self):
@@ -74,37 +85,33 @@ class child(models.Model):
         if (today.month, today.day) < (self.birthday.month, self.birthday.day):
             age -= 1
         return age
-    
+
     def __str__(self):
-        return f"{self.name} {self.surname}"   
-       
-class assistance(models.Model):
-    child = models.ForeignKey(child, on_delete=models.PROTECT) # <-- CAMBIAR A child
+        return f"{self.name} {self.surname}"
+
+
+class assistance(TenantAwareModel):
+    child = models.ForeignKey(child, on_delete=models.PROTECT)
     date = models.DateField()
     group = models.ForeignKey(group, on_delete=models.PROTECT)
     coordinator = models.ForeignKey(coordinator, on_delete=models.PROTECT)
     attended = models.BooleanField()
 
     class Meta:
-        # Asegura que no se pueda registrar la asistencia para el mismo niño en la misma fecha más de una vez.
-        unique_together = ('child', 'date')
+        unique_together = [('tenant', 'child', 'date')]
 
     def __str__(self):
-         # Actualizar también aquí si es necesario
-         return f"{self.child.name} - {str(self.date)}"
+        return f"{self.child.name} - {self.date}"
 
-class GroupCoordinator(models.Model):
+
+class GroupCoordinator(TenantAwareModel):
     group = models.ForeignKey(group, on_delete=models.CASCADE)
     coordinator = models.ForeignKey(coordinator, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = [['group', 'coordinator']]
-        verbose_name = "Asignación Grupo-Coordinador (Cuna)"
+        unique_together = [('tenant', 'group', 'coordinator')]
+        verbose_name = "AsignaciÃ³n Grupo-Coordinador (Cuna)"
         verbose_name_plural = "Asignaciones Grupo-Coordinador (Cuna)"
 
     def __str__(self):
         return f"{self.group.name} - {self.coordinator.name} {self.coordinator.surname}"
-
-
-        
-                     

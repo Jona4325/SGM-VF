@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from datetime import date, timedelta
 from django.utils.translation import gettext_lazy as _ # Para choices
 from decimal import Decimal
+from django.db.models import Q
+from account.tenant import TenantAwareModel
 
 # Validator function (similar to the one in cunakids)
 def validate_date(value):
@@ -18,7 +20,7 @@ def validate_date(value):
     except ValueError as e: # Si strftime falla por alguna razón con un objeto date (poco común)
         raise ValidationError(str(e))
 
-class Teacher(models.Model):
+class Teacher(TenantAwareModel):
     user = models.OneToOneField(
         User,
         on_delete=models.SET_NULL,
@@ -29,7 +31,7 @@ class Teacher(models.Model):
     )
     name = models.CharField(_("name"), max_length=128)
     surname = models.CharField(_("surname"), max_length=128)
-    email = models.EmailField(_("email"), max_length=254, unique=True, null=True, blank=True)
+    email = models.EmailField(_("email"), max_length=254, null=True, blank=True)
     phone_number = models.CharField(_("phone number"), max_length=20, null=True, blank=True)
 
     def __str__(self):
@@ -39,11 +41,18 @@ class Teacher(models.Model):
         verbose_name = _("teacher")
         verbose_name_plural = _("teachers")
         ordering = ['surname', 'name']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'email'],
+                condition=Q(email__isnull=False),
+                name='academia_teacher_tenant_email_uniq',
+            ),
+        ]
 
-class Student(models.Model):
+class Student(TenantAwareModel):
     name = models.CharField(_("name"), max_length=128)
     surname = models.CharField(_("surname"), max_length=128)
-    email = models.EmailField(_("email"), max_length=254, unique=True, null=True, blank=True)
+    email = models.EmailField(_("email"), max_length=254, null=True, blank=True)
     phone_number = models.CharField(_("phone number"), max_length=20, null=True, blank=True)
     date_of_birth = models.DateField(
         _("date of birth"),
@@ -67,10 +76,17 @@ class Student(models.Model):
         verbose_name = _("student")
         verbose_name_plural = _("students")
         ordering = ['surname', 'name']
-        unique_together = [['name', 'surname']]
+        unique_together = [['tenant', 'name', 'surname']]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tenant', 'email'],
+                condition=Q(email__isnull=False),
+                name='academia_student_tenant_email_uniq',
+            ),
+        ]
 
-class Subject(models.Model):
-    name = models.CharField(_("subject name"), max_length=128, unique=True)
+class Subject(TenantAwareModel):
+    name = models.CharField(_("subject name"), max_length=128)
     description = models.TextField(_("description"), blank=True)
     number_of_lessons = models.PositiveIntegerField(
         _("number of lessons"),
@@ -85,8 +101,9 @@ class Subject(models.Model):
         verbose_name = _("subject")
         verbose_name_plural = _("subjects")
         ordering = ['name']
+        unique_together = [('tenant', 'name')]
 
-class Course(models.Model):
+class Course(TenantAwareModel):
     class DayOfWeek(models.TextChoices):
         SUNDAY = 'SUN', _('Sunday')
         MONDAY = 'MON', _('Monday')
@@ -131,10 +148,10 @@ class Course(models.Model):
     class Meta:
         verbose_name = _("course")
         verbose_name_plural = _("courses")
-        unique_together = ('subject', 'academic_period', 'day_of_week', 'start_time')
+        unique_together = ('tenant', 'subject', 'academic_period', 'day_of_week', 'start_time')
         ordering = ['-academic_period', 'subject__name', 'start_date']
 
-class Enrollment(models.Model):
+class Enrollment(TenantAwareModel):
     class Status(models.TextChoices):
         ENROLLED = 'ENROLLED', _('Enrolled')
         APPROVED = 'APPROVED', _('Approved')
@@ -211,10 +228,10 @@ class Enrollment(models.Model):
     class Meta:
         verbose_name = _("enrollment")
         verbose_name_plural = _("enrollments")
-        unique_together = ('student', 'course')
+        unique_together = ('tenant', 'student', 'course')
         ordering = ['course', 'student__surname', 'student__name']
 
-class AttendanceLog(models.Model):
+class AttendanceLog(TenantAwareModel):
     enrollment = models.ForeignKey(
         Enrollment,
         on_delete=models.PROTECT,
@@ -237,12 +254,12 @@ class AttendanceLog(models.Model):
         verbose_name = _("attendance log")
         verbose_name_plural = _("attendance logs")
         # A student can only have one attendance record per lesson number in a specific enrollment
-        unique_together = ('enrollment', 'lesson_number')
+        unique_together = ('tenant', 'enrollment', 'lesson_number')
         # Or, if dates are more fixed than lesson numbers:
         # unique_together = ('enrollment', 'lesson_date')
         ordering = ['enrollment', 'lesson_date', 'lesson_number']
 
-class Grade(models.Model):
+class Grade(TenantAwareModel):
     GRADE_TYPE_CHOICES = [
         ('Leccion', _('Lesson')),
         ('Examen', _('Exam')),
@@ -269,5 +286,5 @@ class Grade(models.Model):
         verbose_name_plural = _("grades")
         # Consider a unique constraint.  Is a student allowed multiple grades
         # for the same lesson number (e.g., a retake)? If so, remove the unique_together.
-        unique_together = ('enrollment', 'lesson_number', 'grade_type')
+        unique_together = ('tenant', 'enrollment', 'lesson_number', 'grade_type')
         ordering = ['enrollment', 'grade_type', 'lesson_number']        

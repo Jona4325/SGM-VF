@@ -1,3 +1,6 @@
+from account.models import TenantMembership
+
+
 def user_app_permissions(request):
     """
     Un procesador de contexto para añadir indicadores de acceso a las aplicaciones
@@ -53,4 +56,18 @@ def user_app_permissions(request):
             app_perms['can_access_jap'] = True      
 
 
-    return {'app_perms': app_perms}
+    tenant_memberships = []
+    current_tenant = getattr(request, 'tenant', None)
+
+    if user.is_authenticated:
+        tenant_memberships = TenantMembership.objects.select_related('tenant').filter(
+            user=user,
+            is_active=True,
+            tenant__is_active=True,
+        )
+
+    return {
+        'app_perms': app_perms,
+        'tenant_memberships': tenant_memberships,
+        'current_tenant': current_tenant,
+    }

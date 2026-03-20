@@ -1,24 +1,28 @@
 from django.db import models
-# Create your models here. 
+from account.tenant import TenantAwareModel
+ # Create your models here. 
 
-class Coordinator(models.Model):
+class Coordinator(TenantAwareModel):
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)     
     def __str__(self):
         return f"{self.name} {self.surname}"
 
     class Meta:
-        unique_together = ('name', 'surname')
+        unique_together = ('tenant', 'name', 'surname')
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=16, unique=True)
+class Group(TenantAwareModel):
+    name = models.CharField(max_length=16)
     description = models.CharField(max_length=64)
     
     def __str__(self):
         return self.name
 
-class Server(models.Model):
+    class Meta:
+        unique_together = ('tenant', 'name')
+
+class Server(TenantAwareModel):
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
     coordinator = models.ForeignKey(Coordinator, on_delete=models.PROTECT)
@@ -28,9 +32,9 @@ class Server(models.Model):
         return f"{self.name} {self.surname}"
 
     class Meta:
-        unique_together = ('name', 'surname')
+        unique_together = ('tenant', 'name', 'surname')
 
-class Assistance(models.Model):
+class Assistance(TenantAwareModel):
     server = models.ForeignKey(Server, on_delete=models.PROTECT)
     date = models.DateField()
     # Los campos group y coordinator se eliminan asumiendo que la asistencia

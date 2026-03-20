@@ -3,6 +3,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import User, Group
 
+from .models import Tenant, TenantMembership
+
 # Define un nuevo User admin que extiende el de por defecto
 class UserAdmin(BaseUserAdmin):
     # Aquí puedes añadir futuras personalizaciones al admin de usuarios
@@ -20,3 +22,5 @@ admin.site.unregister(Group)
 # Registra tus modelos con las nuevas clases de admin
 admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(Tenant)
+admin.site.register(TenantMembership)
