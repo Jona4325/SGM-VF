@@ -4,26 +4,41 @@
 {% block title %}Panel Principal{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="px-4 py-5 my-5 text-center">
-        <h1 class="display-5 fw-bold">Bienvenido, {{ request.user.username }}</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">Selecciona la aplicaci&oacute;n a la que deseas acceder.</p>
-            {% if user.is_staff or user.is_superuser %}
-            <div class="d-flex justify-content-center mt-4">
-                <a href="{% url 'admin:index' %}" class="btn btn-warning btn-lg px-4">
-                    <i class="fas fa-user-shield me-2"></i>Ir a Administraci&oacute;n
-                </a>
-            </div>
-            {% endif %}
-        </div>
+<div class="hero-panel text-center">
+    <div class="hero-eyebrow">
+        <i class="fas fa-dove"></i>
+        Comunidad y servicio
     </div>
+    <h1 class="hero-title">Bienvenido, {{ request.user.username }}</h1>
+    <p class="hero-text">Selecciona la aplicaci&oacute;n que necesitas y administra cada ministerio con una experiencia m&aacute;s clara, cercana y organizada.</p>
+    {% if current_tenant %}
+    <div class="tenant-pill">
+        <i class="fas fa-church"></i>
+        Iglesia activa: {{ current_tenant.name }}
+    </div>
+    {% endif %}
+    {% if user.is_staff or user.is_superuser %}
+    <div class="d-flex justify-content-center mt-4">
+        <a href="{% url 'admin:index' %}" class="btn btn-warning btn-lg px-4">
+            <i class="fas fa-user-shield me-2"></i>Ir a Administraci&oacute;n
+        </a>
+    </div>
+    {% endif %}
+</div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+<div class="section-header">
+    <div>
+        <h2 class="section-title">Ministerios y herramientas</h2>
+        <p class="section-subtitle">Accede r&aacute;pido a cada &aacute;rea del sistema.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         {% if app_perms.can_access_cunakids %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-baby"></i></div>
                     <h5 class="card-title">Cuna Kids</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os, asistencias y coordinadores del ministerio de cuna.</p>
                     <a href="{% url 'cunakids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -34,8 +49,9 @@
 
         {% if app_perms.can_access_academia %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-book-open-reader"></i></div>
                     <h5 class="card-title">Academia</h5>
                     <p class="card-text">Gesti&oacute;n de cursos, estudiantes y profesores de la academia.</p>
                     <a href="{% url 'academia:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -46,8 +62,9 @@
 
         {% if app_perms.can_access_alabanza %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-music"></i></div>
                     <h5 class="card-title">Alabanza</h5>
                     <p class="card-text">Administraci&oacute;n del ministerio de alabanza.</p>
                     <a href="{% url 'alabanza:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -58,8 +75,9 @@
 
         {% if app_perms.can_access_anfitriones %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-handshake-angle"></i></div>
                     <h5 class="card-title">Anfitriones</h5>
                     <p class="card-text">Coordinaci&oacute;n del equipo de anfitriones.</p>
                     <a href="{% url 'anfitriones:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -70,8 +88,9 @@
 
         {% if app_perms.can_access_discipulado %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-people-group"></i></div>
                     <h5 class="card-title">Discipulado</h5>
                     <p class="card-text">Seguimiento y gesti&oacute;n de grupos de discipulado.</p>
                     <a href="{% url 'discipulado:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -82,8 +101,9 @@
 
         {% if app_perms.can_access_encuentros %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-campground"></i></div>
                     <h5 class="card-title">Encuentros</h5>
                     <p class="card-text">Organizaci&oacute;n de encuentros y retiros.</p>
                     <a href="{% url 'encuentros:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -94,8 +114,9 @@
 
         {% if app_perms.can_access_jap %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-briefcase"></i></div>
                     <h5 class="card-title">JAP</h5>
                     <p class="card-text">Ministerio de J&oacute;venes Adultos Profesionales.</p>
                     <a href="{% url 'jap:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -106,8 +127,9 @@
 
         {% if app_perms.can_access_pusukids %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-child-reaching"></i></div>
                     <h5 class="card-title">Pusukids</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os, asistencias y coordinadores del ministerio de ni&ntilde;os.</p>
                     <a href="{% url 'pusukids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -118,8 +140,9 @@
 
         {% if app_perms.can_access_pequediks %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-shapes"></i></div>
                     <h5 class="card-title">Pequekids</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os de 2 a 4 a&ntilde;os, asistencias y coordinadores del ministerio de ni&ntilde;os.</p>
                     <a href="{% url 'pequediks:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -130,8 +153,9 @@
 
         {% if app_perms.can_access_jpro %}
         <div class="col">
-            <div class="card h-100">
+            <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
+                    <div class="module-icon"><i class="fas fa-user-tie"></i></div>
                     <h5 class="card-title">J&oacute;venes profesionales</h5>
                     <p class="card-text">Gesti&oacute;n de j&oacute;venes profesionales, asistencias y coordinadores del ministerio de j&oacute;venes profesionales.</p>
                     <a href="{% url 'jpro:index' %}" class="btn btn-primary mt-auto">Acceder</a>
@@ -139,6 +163,5 @@
             </div>
         </div>
         {% endif %}
-    </div>
 </div>
 {% endblock %}
