@@ -47,6 +47,8 @@ body::before {
   background: linear-gradient(135deg, rgba(255, 250, 244, 0.96), rgba(249, 242, 233, 0.9)) !important;
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 50;
 }
 
 .navbar-brand {
@@ -81,6 +83,7 @@ body::before {
   background: rgba(255, 249, 241, 0.96);
   box-shadow: 0 16px 30px rgba(36, 56, 52, 0.16);
   overflow: hidden;
+  z-index: 1000;
 }
 
 .dropdown-item {
@@ -102,6 +105,8 @@ body::before {
   padding: 28px;
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 .messages-container .alert {
@@ -120,6 +125,7 @@ body::before {
     radial-gradient(circle at 85% 25%, rgba(201, 151, 70, 0.16), transparent 22%),
     linear-gradient(135deg, rgba(255, 250, 243, 0.95), rgba(245, 233, 217, 0.86));
   box-shadow: var(--shadow-soft);
+  z-index: 1;
 }
 
 .hero-panel::after {
