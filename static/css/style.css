@@ -241,6 +241,7 @@ body::before {
 
 .ministry-card .card-body {
   padding: 1.5rem;
+  text-align: center;
 }
 
 .module-icon {
@@ -249,7 +250,7 @@ body::before {
   justify-content: center;
   width: 52px;
   height: 52px;
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem;
   border-radius: 16px;
   background: rgba(31, 91, 77, 0.11);
   color: var(--forest-700);
@@ -383,4 +384,125 @@ body::before {
   .hero-panel {
     padding: 2.3rem 1.4rem;
   }
+}
+
+/* ── Data tables ─────────────────────────────────── */
+.sgm-table {
+  background: var(--white-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 0;
+}
+
+.sgm-table thead th {
+  background: var(--forest-700);
+  color: #fff7ef;
+  font-weight: 600;
+  border: 0;
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sgm-table tbody tr {
+  border-color: rgba(31, 91, 77, 0.08);
+}
+
+.sgm-table tbody tr:hover {
+  background: rgba(31, 91, 77, 0.05);
+}
+
+.sgm-table td {
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+  border-color: rgba(31, 91, 77, 0.08);
+  color: var(--ink-900);
+}
+
+/* ── Action icon buttons ─────────────────────────── */
+.btn-action {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: background 0.18s, color 0.18s;
+  text-decoration: none;
+}
+
+.btn-action-view {
+  background: rgba(31, 91, 77, 0.12);
+  color: var(--forest-700);
+}
+
+.btn-action-view:hover {
+  background: var(--forest-700);
+  color: #fff;
+}
+
+.btn-action-edit {
+  background: rgba(201, 151, 70, 0.15);
+  color: var(--gold-500);
+}
+
+.btn-action-edit:hover {
+  background: var(--gold-400);
+  color: #fff;
+}
+
+.btn-action-delete {
+  background: rgba(180, 50, 40, 0.1);
+  color: #b43228;
+}
+
+.btn-action-delete:hover {
+  background: #b43228;
+  color: #fff;
+}
+
+/* ── Pagination ──────────────────────────────────── */
+.pagination .page-link {
+  color: var(--forest-700);
+  border-color: rgba(31, 91, 77, 0.2);
+  background: transparent;
+}
+
+.pagination .page-item.active .page-link {
+  background: var(--forest-700);
+  border-color: var(--forest-700);
+  color: #fff;
+}
+
+.pagination .page-link:hover {
+  background: rgba(31, 91, 77, 0.08);
+  color: var(--forest-800);
+}
+
+/* ── Form card ───────────────────────────────────── */
+.sgm-form-card {
+  border: 1px solid rgba(183, 128, 45, 0.12);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 252, 248, 0.94), rgba(255, 247, 238, 0.9));
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.sgm-form-card .card-header {
+  background: linear-gradient(135deg, var(--forest-700), var(--teal-600));
+  color: #fff7ef;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  border: 0;
+  padding: 0.9rem 1.4rem;
+}
+
+.sgm-form-card .card-body {
+  padding: 1.75rem;
 }

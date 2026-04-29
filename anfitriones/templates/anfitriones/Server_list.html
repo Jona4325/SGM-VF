@@ -1,38 +1,63 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Lista de Servidores{% endblock %}
+{% block title %}Servidores — Anfitriones{% endblock %}
 
 {% block body %}
-<h2>Lista de Servidores</h2>
-<a href="{% url 'anfitriones:server_create' %}" class="btn btn-primary mb-3">Agregar Nuevo Servidor</a>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-hands-helping me-2" style="color: var(--forest-700);"></i>Servidores
+    </h2>
+    <p class="section-subtitle">Servidores registrados en el ministerio de anfitriones.</p>
+  </div>
+  <a href="{% url 'anfitriones:server_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>Agregar Nuevo Servidor
+  </a>
+</div>
 
 {% if servers %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Coordinador</th>
-                <th>Grupo</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for server in servers %}
-            <tr>
-                <td>{{ server.name }}</td>
-                <td>{{ server.surname }}</td>
-                <td>{{ server.coordinator }}</td>
-                <td>{{ server.group }}</td>
-                <td>
-                    <a href="{% url 'anfitriones:server_update' server.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'anfitriones:server_delete' server.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Coordinador</th>
+        <th>Grupo</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for server in servers %}
+      <tr>
+        <td>{{ server.name }}</td>
+        <td>{{ server.surname }}</td>
+        <td>{{ server.coordinator }}</td>
+        <td>{{ server.group }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'anfitriones:server_update' server.pk %}"
+               class="btn-action btn-action-edit" title="Editar">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'anfitriones:server_delete' server.pk %}"
+               class="btn-action btn-action-delete" title="Eliminar">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% else %}
-    <p>No hay servidores registrados.</p>
+<div class="alert alert-info mt-3">No hay servidores registrados.</div>
 {% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
 {% endblock %}

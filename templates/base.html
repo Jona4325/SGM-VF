@@ -15,6 +15,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="icon" type="image/png" href="{% static 'img/logo1.png' %}" />
+    {% block extra_head %}{% endblock %}
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
@@ -48,45 +50,15 @@
               </a>
             </li>
 
-            {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+            {% if user.is_staff or user.is_superuser %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'admin:index' %}">
-                <i class="fas fa-user-shield"></i> Administraci&oacute;n
+                <i class="fas fa-user-shield"></i> Administración
               </a>
             </li>
             {% endif %}
 
-            {% if user.is_superuser or not user.teacher %}
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="dropdownDatosMaestros"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i class="fas fa-database"></i> Datos Maestros
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="dropdownDatosMaestros">
-                <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-user-friends"></i> Adultos
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-user-graduate"></i> J&oacute;venes
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-child"></i> Ni&ntilde;os
-                  </a>
-                </li>
-              </ul>
-            </li>
-
+            {% if app_perms.can_access_academia or app_perms.can_access_alabanza or app_perms.can_access_anfitriones or app_perms.can_access_cunakids or app_perms.can_access_discipulado or app_perms.can_access_encuentros or app_perms.can_access_jap or app_perms.can_access_jpro or app_perms.can_access_pequediks or app_perms.can_access_pusukids %}
             <li class="nav-item dropdown">
               <a
                 class="nav-link dropdown-toggle"
@@ -99,66 +71,76 @@
                 <i class="fas fa-church"></i> Ministerios
               </a>
               <ul class="dropdown-menu" aria-labelledby="dropdownMinisterios">
+                {% if app_perms.can_access_academia %}
+                <li>
+                  <a class="dropdown-item" href="{% url 'academia:index' %}">
+                    <i class="fas fa-graduation-cap"></i> Academia
+                  </a>
+                </li>
+                {% endif %}
+                {% if app_perms.can_access_alabanza %}
                 <li>
                   <a class="dropdown-item" href="{% url 'alabanza:index' %}">
                     <i class="fas fa-music"></i> Alabanza
                   </a>
                 </li>
+                {% endif %}
+                {% if app_perms.can_access_anfitriones %}
                 <li>
                   <a class="dropdown-item" href="{% url 'anfitriones:index' %}">
                     <i class="fas fa-hands-helping"></i> Anfitriones
                   </a>
                 </li>
+                {% endif %}
+                {% if app_perms.can_access_cunakids %}
+                <li>
+                  <a class="dropdown-item" href="{% url 'cunakids:index' %}">
+                    <i class="fas fa-baby"></i> Cuna Kids
+                  </a>
+                </li>
+                {% endif %}
+                {% if app_perms.can_access_discipulado %}
                 <li>
                   <a class="dropdown-item" href="{% url 'discipulado:index' %}">
                     <i class="fas fa-users"></i> Discipulado
                   </a>
                 </li>
-              </ul>
-            </li>
-
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="dropdownPlanificacion"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i class="fas fa-calendar-alt"></i> Planificaci&oacute;n
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="dropdownPlanificacion">
+                {% endif %}
+                {% if app_perms.can_access_encuentros %}
                 <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="far fa-calendar-alt"></i> Eventos
+                  <a class="dropdown-item" href="{% url 'encuentros:index' %}">
+                    <i class="fas fa-campground"></i> Encuentros
                   </a>
                 </li>
+                {% endif %}
+                {% if app_perms.can_access_jap %}
                 <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-clipboard-list"></i> Recursos
+                  <a class="dropdown-item" href="{% url 'jap:index' %}">
+                    <i class="fas fa-briefcase"></i> JAP
                   </a>
                 </li>
-              </ul>
-            </li>
-
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link dropdown-toggle"
-                href="#"
-                id="dropdownGestionDatos"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i class="fas fa-database"></i> Gesti&oacute;n de Datos
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="dropdownGestionDatos">
+                {% endif %}
+                {% if app_perms.can_access_jpro %}
                 <li>
-                  <a class="dropdown-item" href="{% url 'pusukids:coordinator_list' %}">
-                    <i class="fas fa-file-upload"></i> Cargar Datos
+                  <a class="dropdown-item" href="{% url 'jpro:index' %}">
+                    <i class="fas fa-user-tie"></i> Jóvenes Pro
                   </a>
                 </li>
+                {% endif %}
+                {% if app_perms.can_access_pequediks %}
+                <li>
+                  <a class="dropdown-item" href="{% url 'pequediks:index' %}">
+                    <i class="fas fa-child"></i> Pequeñines
+                  </a>
+                </li>
+                {% endif %}
+                {% if app_perms.can_access_pusukids %}
+                <li>
+                  <a class="dropdown-item" href="{% url 'pusukids:index' %}">
+                    <i class="fas fa-star"></i> Pusu Kids
+                  </a>
+                </li>
+                {% endif %}
               </ul>
             </li>
             {% endif %}
@@ -190,7 +172,7 @@
                 {% if user.is_staff or user.is_superuser %}
                 <li>
                   <a class="dropdown-item" href="{% url 'admin:index' %}">
-                    <i class="fas fa-user-shield me-2"></i>Administraci&oacute;n
+                    <i class="fas fa-user-shield me-2"></i>Administración
                   </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -200,7 +182,7 @@
                   <form action="{% url 'account:logout' %}" method="post" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="dropdown-item">
-                      <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesi&oacute;n
+                      <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
                     </button>
                   </form>
                 </li>
@@ -209,7 +191,7 @@
             {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'account:login' %}">
-                <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesi&oacute;n
+                <i class="fas fa-sign-in-alt me-1"></i> Iniciar Sesión
               </a>
             </li>
             {% endif %}
@@ -235,5 +217,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
   </body>
 </html>

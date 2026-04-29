@@ -1,101 +1,114 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Resumen General — Anfitriones{% endblock %}
 
 {% block body %}
-<div class="container-fluid">
-    <h1 class="h2">Dashboard General</h1>
-    <p>Resumen de la actividad y registros en el sistema.</p>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-chart-pie me-2" style="color: var(--forest-700);"></i>Resumen General
+    </h2>
+    <p class="section-subtitle">Actividad y registros del ministerio de anfitriones.</p>
+  </div>
+</div>
 
-    <!-- Fila de Totales Generales -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card text-white bg-primary h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title">Servidores</h5>
-                            <p class="card-text fs-2 fw-bold">{{ total_servers }}</p>
-                        </div>
-                        <i class="fas fa-users fa-3x"></i>
-                    </div>
-                </div>
-                <a href="{% url 'anfitriones:server_list' %}" class="card-footer text-white">
-                    Ver detalles <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
+<!-- Totales -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-4 col-md-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+        <div class="module-icon">
+          <i class="fas fa-hands-helping"></i>
         </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card text-white bg-info h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title">Grupos</h5>
-                            <p class="card-text fs-2 fw-bold">{{ total_groups }}</p>
-                        </div>
-                        <i class="fas fa-home fa-3x"></i>
-                    </div>
-                </div>
-                <a href="{% url 'anfitriones:group_list' %}" class="card-footer text-white">
-                    Ver detalles <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card text-white bg-secondary h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="card-title">Coordinadores</h5>
-                            <p class="card-text fs-2 fw-bold">{{ total_coordinators }}</p>
-                        </div>
-                        <i class="fas fa-user-tie fa-3x"></i>
-                    </div>
-                </div>
-                <a href="{% url 'anfitriones:coordinator_list' %}" class="card-footer text-white">
-                    Ver detalles <i class="fas fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
+        <p class="display-5 fw-bold mb-1" style="color: var(--ink-900);">{{ total_servers }}</p>
+        <p class="text-muted mb-3">Servidores registrados</p>
+        <a href="{% url 'anfitriones:server_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-right me-1"></i>Ver servidores
+        </a>
+      </div>
     </div>
-
-    <!-- Fila de Estadísticas Recientes -->
-    <div class="row">
-        <!-- Columna de Estadísticas de Grupos -->
-        <div class="col-lg-6 mb-4">
-            <div class="card">
-                <div class="card-header fw-bold">Último Reporte de Grupos</div>
-                <div class="card-body">
-                    {% if group_stats %}
-                        <h5 class="card-title">Reporte del {{ group_stats.date|date:"d/m/Y" }}</h5>
-                        <p class="card-text display-4 fw-bold">{{ group_stats.total_attendees }}</p>
-                        <p class="card-text text-muted">Asistentes en {{ group_stats.groups_attended }} de {{ group_stats.total_groups_in_report }} grupos reportados.</p>
-                        <a href="{% url 'anfitriones:attendance_list' %}" class="btn btn-outline-primary mt-2">Ver todos los reportes</a>
-                    {% else %}
-                        <p class="card-text">Aún no hay reportes de asistencia de grupos.</p>
-                        <a href="{% url 'anfitriones:attendance_create' %}" class="btn btn-primary">Registrar primer reporte</a>
-                    {% endif %}
-                </div>
-            </div>
+  </div>
+  <div class="col-lg-4 col-md-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+        <div class="module-icon">
+          <i class="fas fa-home"></i>
         </div>
-
-        <!-- Columna de Asistencia de Servidores -->
-        <div class="col-lg-6 mb-4">
-            <div class="card">
-                <div class="card-header fw-bold">Última Asistencia de Servidores</div>
-                <div class="card-body">
-                    {% if server_stats %}
-                        <h5 class="card-title">Servicio {{ server_stats.service }} del {{ server_stats.date|date:"d/m/Y" }}</h5>
-                        <p class="card-text display-4 fw-bold">{{ server_stats.servers_attended }}</p>
-                        <p class="card-text text-muted">Servidores presentes de {{ server_stats.total_servers_in_report }} en lista.</p>
-                        <a href="{% url 'anfitriones:assistance_list' %}" class="btn btn-outline-primary mt-2">Ver todas las asistencias</a>
-                    {% else %}
-                        <p class="card-text">Aún no hay registros de asistencia de servidores.</p>
-                        <a href="{% url 'anfitriones:assistance_batch_create' %}" class="btn btn-primary">Registrar asistencia</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        <p class="display-5 fw-bold mb-1" style="color: var(--ink-900);">{{ total_groups }}</p>
+        <p class="text-muted mb-3">Grupos registrados</p>
+        <a href="{% url 'anfitriones:group_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-right me-1"></i>Ver grupos
+        </a>
+      </div>
     </div>
+  </div>
+  <div class="col-lg-4 col-md-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+        <div class="module-icon">
+          <i class="fas fa-user-tie"></i>
+        </div>
+        <p class="display-5 fw-bold mb-1" style="color: var(--ink-900);">{{ total_coordinators }}</p>
+        <p class="text-muted mb-3">Coordinadores registrados</p>
+        <a href="{% url 'anfitriones:coordinator_list' %}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-arrow-right me-1"></i>Ver coordinadores
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estadísticas recientes -->
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-header">
+        <i class="fas fa-chart-bar me-2"></i>Último Reporte de Grupos
+      </div>
+      <div class="card-body">
+        {% if group_stats %}
+          <p class="mb-1 text-muted small">Reporte del {{ group_stats.date|date:"d/m/Y" }}</p>
+          <p class="display-4 fw-bold mb-1" style="color: var(--forest-700);">{{ group_stats.total_attendees }}</p>
+          <p class="text-muted">Asistentes en {{ group_stats.groups_attended }} de {{ group_stats.total_groups_in_report }} grupos reportados.</p>
+          <a href="{% url 'anfitriones:attendance_list' %}" class="btn btn-outline-secondary mt-2">
+            <i class="fas fa-list me-1"></i>Ver todos los reportes
+          </a>
+        {% else %}
+          <p class="text-muted">Aún no hay reportes de asistencia de grupos.</p>
+          <a href="{% url 'anfitriones:attendance_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Registrar primer reporte
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-header">
+        <i class="fas fa-clipboard-check me-2"></i>Última Asistencia de Servidores
+      </div>
+      <div class="card-body">
+        {% if server_stats %}
+          <p class="mb-1 text-muted small">Servicio {{ server_stats.service }} del {{ server_stats.date|date:"d/m/Y" }}</p>
+          <p class="display-4 fw-bold mb-1" style="color: var(--forest-700);">{{ server_stats.servers_attended }}</p>
+          <p class="text-muted">Servidores presentes de {{ server_stats.total_servers_in_report }} en lista.</p>
+          <a href="{% url 'anfitriones:assistance_list' %}" class="btn btn-outline-secondary mt-2">
+            <i class="fas fa-list me-1"></i>Ver todas las asistencias
+          </a>
+        {% else %}
+          <p class="text-muted">Aún no hay registros de asistencia de servidores.</p>
+          <a href="{% url 'anfitriones:assistance_batch_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Registrar asistencia
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
 </div>
 {% endblock %}

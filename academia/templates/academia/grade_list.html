@@ -1,27 +1,31 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load i18n %}
 
 {% block title %}{{ page_title }}{% endblock %}
 
 {% block body %}
-<!-- En tu archivo academia/templates/academia/grade_list.html -->
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>{{ page_title }}</h2>
-        <div>
-            <a href="{% url 'academia:take-grades' %}" class="btn btn-info me-2">
-                <i class="fas fa-tasks"></i> {% translate "Take Grades in Bulk" %}
-            </a>
-            <a href="{% url 'academia:grade-create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> {% translate "Register Single Grade" %}
-            </a>
-        </div>
+<div class="section-header">
+    <div>
+        <h2 class="section-title">{{ page_title }}</h2>
+        <p class="section-subtitle">{% translate "View and manage individual lesson grades." %}</p>
     </div>
+    {% if user.is_superuser %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'academia:take-grades' %}" class="btn btn-warning">
+            <i class="fas fa-tasks me-2"></i>{% translate "Take Grades in Bulk" %}
+        </a>
+        <a href="{% url 'academia:grade-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>{% translate "Register Single Grade" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
 
-    {% if grades %}
-        <table class="table table-striped table-hover">
-            <thead class="thead-dark">
+{% if grades %}
+    <div class="table-responsive">
+        <table class="table sgm-table">
+            <thead>
                 <tr>
                     <th>{% translate "Student" %}</th>
                     <th>{% translate "Course" %}</th>
@@ -40,41 +44,44 @@
                     <td>{{ grade.grade }}</td>
                     <td>{{ grade.get_grade_type_display }}</td>
                     <td>
-                        <a href="{% url 'academia:grade-detail' grade.pk %}" class="btn btn-info btn-sm" title="{% translate 'View Details' %}"><i class="fas fa-eye"></i></a>
-                        <a href="{% url 'academia:grade-update' grade.pk %}" class="btn btn-warning btn-sm" title="{% translate 'Edit' %}"><i class="fas fa-edit"></i></a>
-                        <a href="{% url 'academia:grade-delete' grade.pk %}" class="btn btn-danger btn-sm" title="{% translate 'Delete' %}"><i class="fas fa-trash-alt"></i></a>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'academia:grade-detail' grade.pk %}" class="btn-action btn-action-view" title="{% translate 'View Details' %}"><i class="fas fa-eye"></i></a>
+                            {% if user.is_superuser %}
+                            <a href="{% url 'academia:grade-update' grade.pk %}" class="btn-action btn-action-edit" title="{% translate 'Edit' %}"><i class="fas fa-pen"></i></a>
+                            <a href="{% url 'academia:grade-delete' grade.pk %}" class="btn-action btn-action-delete" title="{% translate 'Delete' %}"><i class="fas fa-trash-alt"></i></a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
 
-        {% if is_paginated %}
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; {% translate "First" %}</a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">{% translate "Previous" %}</a></li>
-                    {% endif %}
-
-                    <li class="page-item disabled"><span class="page-link">{% blocktrans %}Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.{% endblocktrans %}</span></li>
-
-                    {% if page_obj.has_next %}
-                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">{% translate "Next" %}</a></li>
-                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{% translate "Last" %} &raquo;</a></li>
-                    {% endif %}
-                </ul>
-            </nav>
-        {% endif %}
-
-    {% else %}
-        <div class="alert alert-info" role="alert">
-            {% translate "No grades registered yet." %}
-        </div>
+    {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-3">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">&laquo; {% translate "First" %}</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">{% translate "Previous" %}</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Pag. {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">{% translate "Next" %}</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{% translate "Last" %} &raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
     {% endif %}
 
-    <div class="mt-4 text-center">
-        <a href="{% url 'academia:index' %}" class="btn btn-secondary">{% translate "Back to Main Menu" %}</a>
-    </div>
+{% else %}
+    <div class="alert alert-info" role="alert">{% translate "No grades registered yet." %}</div>
+{% endif %}
+
+<div class="mt-4">
+    <a href="{% url 'academia:index' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>{% translate "Back to Main Menu" %}
+    </a>
 </div>
+
 {% endblock %}

@@ -1,48 +1,77 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Lista de Estadísticas de Grupos{% endblock %}
+{% block title %}Estadísticas de Grupos — Anfitriones{% endblock %}
 
 {% block body %}
-<h2>Estadísticas de Grupos</h2>
-<a href="{% url 'anfitriones:attendance_create' %}" class="btn btn-primary mb-3">Registrar Nueva Estadística</a>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-chart-bar me-2" style="color: var(--forest-700);"></i>Estadísticas de Grupos
+    </h2>
+    <p class="section-subtitle">Registros de conteo de asistentes por grupo y servicio.</p>
+  </div>
+  <a href="{% url 'anfitriones:attendance_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>Registrar Nueva Estadística
+  </a>
+</div>
 
 {% if attendances %}
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Grupo</th>
-                <th>Fecha</th>
-                <th>Asistió</th>
-                <th>Adultos</th>
-                <th>Jóvenes</th>
-                <th>Niños</th>
-                <th>Total</th>
-                <th>Autos</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for attendance in attendances %}
-            <tr>
-                <td>{{ attendance.group.name }}</td>
-                <td>{{ attendance.date|date:"d/m/Y" }}</td>
-                <td>
-                    {% if attendance.attended %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-danger">No</span>{% endif %}
-                </td>
-                <td>{{ attendance.adults }}</td>
-                <td>{{ attendance.youngs }}</td>
-                <td>{{ attendance.children }}</td>
-                <td><strong>{{ attendance.total }}</strong></td>
-                <td>{{ attendance.autos }}</td>
-                <td>
-                    <a href="{% url 'anfitriones:attendance_update' attendance.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'anfitriones:attendance_delete' attendance.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Grupo</th>
+        <th>Fecha</th>
+        <th>Asistió</th>
+        <th>Adultos</th>
+        <th>Jóvenes</th>
+        <th>Niños</th>
+        <th>Total</th>
+        <th>Autos</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for attendance in attendances %}
+      <tr>
+        <td>{{ attendance.group.name }}</td>
+        <td>{{ attendance.date|date:"d/m/Y" }}</td>
+        <td>
+          {% if attendance.attended %}
+            <span class="badge bg-success">Sí</span>
+          {% else %}
+            <span class="badge bg-danger">No</span>
+          {% endif %}
+        </td>
+        <td>{{ attendance.adults }}</td>
+        <td>{{ attendance.youngs }}</td>
+        <td>{{ attendance.children }}</td>
+        <td><strong>{{ attendance.total }}</strong></td>
+        <td>{{ attendance.autos }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'anfitriones:attendance_update' attendance.pk %}"
+               class="btn-action btn-action-edit" title="Editar">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'anfitriones:attendance_delete' attendance.pk %}"
+               class="btn-action btn-action-delete" title="Eliminar">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% else %}
-    <p>No hay estadísticas de grupos registradas.</p>
+<div class="alert alert-info mt-3">No hay estadísticas de grupos registradas.</div>
 {% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
 {% endblock %}

@@ -1,175 +1,142 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Ministerio Infantil - Pusukids{% endblock %}
+{% block title %}Ministerio Pusukids - Infantil{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
 
-  <!-- BOTÓN DE REGRESO AL INICIO -->
-  <div class="mb-4">
-    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
-      <i class="fas fa-arrow-left me-1"></i> Volver al Inicio
-    </a>
-  </div>
-
-  <div class="text-center mb-5">
-    <h1 class="display-4 fw-bold section-title">Ministerio Infantil - Pusukids</h1>
-    <p class="lead text-muted">Gestión de procesos para el ministerio infantil.</p>
-  </div>
-
-  <div class="row row-cols-1 row-cols-md-3 g-4">
-    {% comment %} Tarjetas principales {% endcomment %}
-
-    <!-- Coordinadores -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-user-friends me-2"></i> Coordinadores</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Administre los coordinadores del ministerio infantil.</p>
-          <a href="{% url 'pusukids:coordinator_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Coordinadores
-          </a>
-        </div>
-      </div>
+<div class="hero-panel text-center">
+    <div class="hero-eyebrow">
+        <i class="fas fa-baby"></i>
+        Ministerio Infantil
     </div>
-
-    <!-- Grupos -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i> Grupos</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Administre los grupos de servidores.</p>
-          <a href="{% url 'pusukids:group_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Grupos
-          </a>
-        </div>
-      </div>
+    <h1 class="hero-title">Pusukids</h1>
+    <p class="hero-text">Gestiona coordinadores, grupos, servidores, niños, asistencias y más del ministerio infantil.</p>
+    <div class="d-flex justify-content-center mt-4">
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Inicio
+        </a>
     </div>
-
-    <!-- Servidores -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-user-tie me-2"></i> Servidores</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Administre los servidores del ministerio infantil.</p>
-          <a href="{% url 'pusukids:server_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Servidores
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Niños -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-child me-2"></i> Niños</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Administre la información de los niños.</p>
-          <a href="{% url 'pusukids:child_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Niños
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Asistencias -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i> Asistencias</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Gestionar registros de asistencia.</p>
-          <a href="{% url 'pusukids:assistance_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Asistencias
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Gastos -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-money-bill-wave me-2"></i> Gastos</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Controle los gastos semanales.</p>
-          <a href="{% url 'pusukids:expense_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Ver Gastos
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Fechas -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i> Fechas</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Gestione las fechas de servicio y eventos.</p>
-          <a href="{% url 'pusukids:fecha_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-calendar-check me-1"></i> Administrar Fechas
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Info Semanal -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i> Info Semanal</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Registrar o revisar datos semanales.</p>
-          <a href="{% url 'pusukids:weekinfo_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Ver Información
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Asignaciones Coordinador -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-user-tag me-2"></i> Asignaciones</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Coordine qué coordinador trabaja con qué grupo.</p>
-          <a href="{% url 'pusukids:groupcoordinator_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Ver Asignaciones
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Groupage -->
-    <div class="col">
-      <div class="card h-100 border-primary shadow-sm">
-        <div class="card-header bg-light">
-          <h5 class="card-title mb-0"><i class="fas fa-layer-group me-2"></i> Edades por Grupo</h5>
-        </div>
-        <div class="card-body d-flex flex-column">
-          <p class="card-text flex-grow-1">Gestionar rangos de edad para cada grupo.</p>
-          <a href="{% url 'pusukids:groupage_list' %}" class="btn btn-outline-primary mt-auto">
-            <i class="fas fa-clipboard-check me-1"></i> Administrar Groupage
-          </a>
-        </div>
-      </div>
-    </div>
-
-  </div>
 </div>
+
+<div class="section-header">
+    <div>
+        <h2 class="section-title">Módulos disponibles</h2>
+        <p class="section-subtitle">Accede a cada sección del ministerio infantil.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-user-friends"></i></div>
+                <h5 class="card-title">Coordinadores</h5>
+                <p class="card-text">Administra los coordinadores del ministerio infantil.</p>
+                <a href="{% url 'pusukids:coordinator_list' %}" class="btn btn-primary mt-auto w-100">Ver Coordinadores</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-users"></i></div>
+                <h5 class="card-title">Grupos</h5>
+                <p class="card-text">Administra los grupos de servidores del ministerio.</p>
+                <a href="{% url 'pusukids:group_list' %}" class="btn btn-primary mt-auto w-100">Ver Grupos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-user-tie"></i></div>
+                <h5 class="card-title">Servidores</h5>
+                <p class="card-text">Administra los servidores del ministerio infantil.</p>
+                <a href="{% url 'pusukids:server_list' %}" class="btn btn-primary mt-auto w-100">Ver Servidores</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-child"></i></div>
+                <h5 class="card-title">Niños</h5>
+                <p class="card-text">Administra la información de los niños del ministerio.</p>
+                <a href="{% url 'pusukids:child_list' %}" class="btn btn-primary mt-auto w-100">Ver Niños</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-clipboard-list"></i></div>
+                <h5 class="card-title">Asistencias</h5>
+                <p class="card-text">Gestiona los registros de asistencia del ministerio.</p>
+                <a href="{% url 'pusukids:assistance_list' %}" class="btn btn-primary mt-auto w-100">Ver Asistencias</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <h5 class="card-title">Gastos</h5>
+                <p class="card-text">Controla los gastos semanales del ministerio.</p>
+                <a href="{% url 'pusukids:expense_list' %}" class="btn btn-primary mt-auto w-100">Ver Gastos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-calendar-alt"></i></div>
+                <h5 class="card-title">Fechas</h5>
+                <p class="card-text">Gestiona las fechas de servicio y eventos del ministerio.</p>
+                <a href="{% url 'pusukids:fecha_list' %}" class="btn btn-primary mt-auto w-100">Ver Fechas</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-info-circle"></i></div>
+                <h5 class="card-title">Info Semanal</h5>
+                <p class="card-text">Registra y revisa los datos semanales del ministerio.</p>
+                <a href="{% url 'pusukids:weekinfo_list' %}" class="btn btn-primary mt-auto w-100">Ver Información</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-user-tag"></i></div>
+                <h5 class="card-title">Asignaciones</h5>
+                <p class="card-text">Coordina qué coordinador trabaja con qué grupo.</p>
+                <a href="{% url 'pusukids:groupcoordinator_list' %}" class="btn btn-primary mt-auto w-100">Ver Asignaciones</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card h-100 ministry-card">
+            <div class="card-body d-flex flex-column">
+                <div class="module-icon"><i class="fas fa-layer-group"></i></div>
+                <h5 class="card-title">Edades por Grupo</h5>
+                <p class="card-text">Gestiona los rangos de edad asignados a cada grupo.</p>
+                <a href="{% url 'pusukids:groupage_list' %}" class="btn btn-primary mt-auto w-100">Ver Edades</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

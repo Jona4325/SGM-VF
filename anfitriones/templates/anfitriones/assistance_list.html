@@ -1,42 +1,71 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Lista de Asistencias de Servidores{% endblock %}
+{% block title %}Asistencias de Servidores — Anfitriones{% endblock %}
 
 {% block body %}
-<h2>Lista de Asistencias de Servidores</h2>
-<a href="{% url 'anfitriones:assistance_batch_create' %}" class="btn btn-primary mb-3">Registrar Nueva Asistencia</a>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-clipboard-check me-2" style="color: var(--forest-700);"></i>Asistencias de Servidores
+    </h2>
+    <p class="section-subtitle">Registros de asistencia de los servidores en los servicios.</p>
+  </div>
+  <a href="{% url 'anfitriones:assistance_batch_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>Registrar Nueva Asistencia
+  </a>
+</div>
 
 {% if assistances %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Servidor</th>
-                <th>Fecha</th>
-                <th>Hora Inicio</th>
-                <th>Servicio</th>
-                <th>Asistió</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for assistance in assistances %}
-            <tr>
-                <td>{{ assistance.server }}</td>
-                <td>{{ assistance.date|date:"d/m/Y" }}</td>
-                <td>{{ assistance.starthour|time:"H:i" }}</td>
-                <td>{{ assistance.get_service_display }}</td>
-                <td>
-                    {% if assistance.attended %}<span class="badge bg-success">Sí</span>{% else %}<span class="badge bg-danger">No</span>{% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'anfitriones:assistance_update' assistance.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'anfitriones:assistance_delete' assistance.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Servidor</th>
+        <th>Fecha</th>
+        <th>Hora Inicio</th>
+        <th>Servicio</th>
+        <th>Asistió</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assistance in assistances %}
+      <tr>
+        <td>{{ assistance.server }}</td>
+        <td>{{ assistance.date|date:"d/m/Y" }}</td>
+        <td>{{ assistance.starthour|time:"H:i" }}</td>
+        <td>{{ assistance.get_service_display }}</td>
+        <td>
+          {% if assistance.attended %}
+            <span class="badge bg-success">Sí</span>
+          {% else %}
+            <span class="badge bg-danger">No</span>
+          {% endif %}
+        </td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'anfitriones:assistance_update' assistance.pk %}"
+               class="btn-action btn-action-edit" title="Editar">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'anfitriones:assistance_delete' assistance.pk %}"
+               class="btn-action btn-action-delete" title="Eliminar">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% else %}
-    <p>No hay asistencias registradas.</p>
+<div class="alert alert-info mt-3">No hay asistencias registradas.</div>
 {% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
 {% endblock %}

@@ -1,34 +1,61 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Lista de Coordinadores{% endblock %}
+{% block title %}Coordinadores — Anfitriones{% endblock %}
 
 {% block body %}
-    <h1>Lista de Coordinadores (Anfitriones)</h1>
-    <a href="{% url 'anfitriones:coordinator_create' %}" class="btn btn-primary mb-3">Registrar Nuevo Coordinador</a>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-user-tie me-2" style="color: var(--forest-700);"></i>Coordinadores
+    </h2>
+    <p class="section-subtitle">Coordinadores registrados en el ministerio de anfitriones.</p>
+  </div>
+  <a href="{% url 'anfitriones:coordinator_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>Registrar Nuevo Coordinador
+  </a>
+</div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for coordinator in coordinators %}
-            <tr>
-                <td>{{ coordinator.name }}</td>
-                <td>{{ coordinator.surname }}</td>
-                <td>
-                    <a href="{% url 'anfitriones:coordinator_update' coordinator.pk %}" class="btn btn-sm btn-warning">Editar</a> |
-                    <a href="{% url 'anfitriones:coordinator_delete' coordinator.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3">No hay coordinadores registrados.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+{% if coordinators %}
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for coordinator in coordinators %}
+      <tr>
+        <td>{{ coordinator.name }}</td>
+        <td>{{ coordinator.surname }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'anfitriones:coordinator_update' coordinator.pk %}"
+               class="btn-action btn-action-edit" title="Editar">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'anfitriones:coordinator_delete' coordinator.pk %}"
+               class="btn-action btn-action-delete" title="Eliminar">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center text-muted">No hay coordinadores registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">No hay coordinadores registrados.</div>
+{% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
 {% endblock %}

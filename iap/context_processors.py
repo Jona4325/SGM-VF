@@ -30,30 +30,28 @@ def user_app_permissions(request):
         for key in app_perms:
             app_perms[key] = True
     else:
-        # Para usuarios normales, comprobamos si pertenecen a grupos específicos.
-        # Asumimos que los grupos se llaman 'cunakids_staff', 'academia_staff', etc.
-        if user.groups.filter(name='cunakids_staff').exists():
-            app_perms['can_access_cunakids'] = True
-        
-        # Permiso para Academia (Maestros)
-        if user.groups.filter(name='Maestros').exists():
-            app_perms['can_access_academia'] = True
+        group_names = set(user.groups.values_list('name', flat=True))
 
-        # Permiso para Pusukids
-        if user.groups.filter(name='pusukids_staff').exists():
+        if 'cunakids_staff' in group_names:
+            app_perms['can_access_cunakids'] = True
+        if 'Maestros' in group_names:
+            app_perms['can_access_academia'] = True
+        if 'alabanza_staff' in group_names:
+            app_perms['can_access_alabanza'] = True
+        if 'anfitriones_staff' in group_names:
+            app_perms['can_access_anfitriones'] = True
+        if 'discipulado_staff' in group_names:
+            app_perms['can_access_discipulado'] = True
+        if 'encuentros_staff' in group_names:
+            app_perms['can_access_encuentros'] = True
+        if 'jap_staff' in group_names:
+            app_perms['can_access_jap'] = True
+        if 'pusukids_staff' in group_names:
             app_perms['can_access_pusukids'] = True
-        
-        # Permiso para Pequediks
-        if user.groups.filter(name='pequediks_staff').exists():
-            app_perms['can_access_pequediks'] = True    
-        
-        # Permiso para Jpro
-        if user.groups.filter(name='jpro_staff').exists():
-            app_perms['can_access_jpro'] = True 
-                 
-            # Permiso para Jap
-        if user.groups.filter(name='jap_staff').exists():
-            app_perms['can_access_jap'] = True      
+        if 'pequediks_staff' in group_names:
+            app_perms['can_access_pequediks'] = True
+        if 'jpro_staff' in group_names:
+            app_perms['can_access_jpro'] = True
 
 
     tenant_memberships = []

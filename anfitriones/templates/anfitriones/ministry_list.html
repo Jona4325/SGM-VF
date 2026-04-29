@@ -1,33 +1,59 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}Lista de Ministerios{% endblock %}
+{% block title %}Ministerios — Anfitriones{% endblock %}
 
 {% block body %}
-<h2>Lista de Ministerios</h2>
-<a href="{% url 'anfitriones:ministry_create' %}" class="btn btn-primary mb-3">Agregar Nuevo Ministerio</a>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-church me-2" style="color: var(--forest-700);"></i>Ministerios
+    </h2>
+    <p class="section-subtitle">Ministerios registrados en el sistema.</p>
+  </div>
+  <a href="{% url 'anfitriones:ministry_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>Agregar Nuevo Ministerio
+  </a>
+</div>
 
 {% if ministries %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ministry in ministries %}
-            <tr>
-                <td>{{ ministry.name }}</td>
-                <td>{{ ministry.description }}</td>
-                <td>
-                    <a href="{% url 'anfitriones:ministry_update' ministry.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'anfitriones:ministry_delete' ministry.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ministry in ministries %}
+      <tr>
+        <td>{{ ministry.name }}</td>
+        <td>{{ ministry.description }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'anfitriones:ministry_update' ministry.pk %}"
+               class="btn-action btn-action-edit" title="Editar">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'anfitriones:ministry_delete' ministry.pk %}"
+               class="btn-action btn-action-delete" title="Eliminar">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% else %}
-    <p>No hay ministerios registrados.</p>
+<div class="alert alert-info mt-3">No hay ministerios registrados.</div>
 {% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'anfitriones:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
 {% endblock %}

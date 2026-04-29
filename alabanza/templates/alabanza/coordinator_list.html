@@ -1,41 +1,60 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load i18n %}
 
 {% block title %}{% translate "Coordinators List" %}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>{% translate "Coordinators List" %}</h2>
-        <a href="{% url 'alabanza:coordinator_create' %}" class="btn btn-primary">{% translate "Add New Coordinator" %}</a>
-    </div>
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-user-tie me-2" style="color: var(--forest-700);"></i>{% translate "Coordinators" %}
+    </h2>
+    <p class="section-subtitle">{% translate "Coordinators registered in the system." %}</p>
+  </div>
+  <a href="{% url 'alabanza:coordinator_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus me-1"></i>{% translate "Add New Coordinator" %}
+  </a>
+</div>
 
-    {% if coordinators %}
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="thead-light">
-                <tr>
-                    <th>{% translate "Name" %}</th>
-                    <th>{% translate "Surname" %}</th>
-                    <th>{% translate "Actions" %}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for coordinator in coordinators %}
-                <tr>
-                    <td>{{ coordinator.name }}</td>                    
-                    <td>{{ coordinator.surname }}</td>
-                    <td>                        
-                        <a href="{% url 'alabanza:coordinator_update' coordinator.pk %}" class="btn btn-sm btn-warning" title="{% translate 'Edit' %}"><i class="fas fa-edit"></i></a>
-                        <a href="{% url 'alabanza:coordinator_delete' coordinator.pk %}" class="btn btn-sm btn-danger" title="{% translate 'Delete' %}"><i class="fas fa-trash-alt"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-        <div class="alert alert-info">{% translate "No coordinators registered yet." %}</div>
-    {% endif %}
+{% if coordinators %}
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>{% translate "Name" %}</th>
+        <th>{% translate "Surname" %}</th>
+        <th class="text-center">{% translate "Actions" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for coordinator in coordinators %}
+      <tr>
+        <td>{{ coordinator.name }}</td>
+        <td>{{ coordinator.surname }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'alabanza:coordinator_update' coordinator.pk %}"
+               class="btn-action btn-action-edit" title="{% translate 'Edit' %}">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{% url 'alabanza:coordinator_delete' coordinator.pk %}"
+               class="btn-action btn-action-delete" title="{% translate 'Delete' %}">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">{% translate "No coordinators registered yet." %}</div>
+{% endif %}
+
+<div class="mt-4">
+  <a href="{% url 'alabanza:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>{% translate "Back" %}
+  </a>
 </div>
 {% endblock %}
