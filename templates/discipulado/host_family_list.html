@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Familias Anfitrionas - Discipulado{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title"><i class="fas fa-home me-2" style="color: var(--forest-700);"></i>Familias Anfitrionas</h2>
+    <p class="section-subtitle">Familias que reciben reuniones de discipulado.</p>
+  </div>
+  <a href="{% url 'discipulado:host_family_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Nueva Familia</a>
+</div>
+
+{% if host_families %}
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Familia</th>
+        <th>Contacto</th>
+        <th>Teléfono</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for family in host_families %}
+      <tr>
+        <td>{{ family.family_name }}</td>
+        <td>{{ family.contact_name }}</td>
+        <td>{{ family.contact_phone|default:"-" }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center">
+            <a href="{% url 'discipulado:host_family_update' family.pk %}" class="btn-action btn-action-edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
+            <a href="{% url 'discipulado:host_family_delete' family.pk %}" class="btn-action btn-action-delete" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info">No hay familias anfitrionas registradas.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes - Discipulado{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title"><i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>Reportes Operativos</h2>
+    <p class="section-subtitle">Asistencia por reunión, historial por discípulo y resumen financiero.</p>
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-2"></i>Filtros</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-lg-4 col-md-6">
+        <label class="form-label">Discípulo</label>
+        <select name="disciple" class="form-select">
+          <option value="">Todos</option>
+          {% for disciple in disciples %}
+          <option value="{{ disciple.pk }}" {% if selected_disciple == disciple.pk|stringformat:"s" %}selected{% endif %}>{{ disciple.last_name }}, {{ disciple.first_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Desde</label>
+        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-2 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Filtrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-4 col-md-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-body text-center py-4">
+        <div class="module-icon"><i class="fas fa-hand-holding-heart"></i></div>
+        <p class="display-6 fw-bold mb-1">${{ total_income }}</p>
+        <p class="text-muted mb-0">Total ingresos</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-md-6">
+    <div class="sgm-form-card h-100">
+      <div class="card-body text-center py-4">
+        <div class="module-icon"><i class="fas fa-receipt"></i></div>
+        <p class="display-6 fw-bold mb-1">${{ total_expense }}</p>
+        <p class="text-muted mb-0">Total gastos</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4 col-md-12">
+    <div class="sgm-form-card h-100">
+      <div class="card-body text-center py-4">
+        <div class="module-icon"><i class="fas fa-wallet"></i></div>
+        <p class="display-6 fw-bold mb-1">${{ net_total }}</p>
+        <p class="text-muted mb-0">Saldo neto</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-calendar-check me-2"></i>Asistencia por Reunión</div>
+  <div class="card-body">
+    {% if attendance_by_meeting %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Grupo</th>
+            <th>Presentes</th>
+            <th>Ausentes</th>
+            <th>Justificados</th>
+            <th>Total marcados</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in attendance_by_meeting %}
+          <tr>
+            <td>{{ row.meeting_date }}</td>
+            <td>{{ row.group.name }}</td>
+            <td>{{ row.present_count }}</td>
+            <td>{{ row.absent_count }}</td>
+            <td>{{ row.justified_count }}</td>
+            <td>{{ row.total_marked }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay reuniones con asistencia registrada.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-user-clock me-2"></i>Historial de Asistencia por Discípulo</div>
+  <div class="card-body">
+    {% if disciple_history %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Grupo</th>
+            <th>Discípulo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in disciple_history %}
+          <tr>
+            <td>{{ row.meeting.meeting_date }}</td>
+            <td>{{ row.meeting.group.name }}</td>
+            <td>{{ row.disciple }}</td>
+            <td>{{ row.get_status_display }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay historial para los filtros seleccionados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="sgm-form-card">
+  <div class="card-header"><i class="fas fa-coins me-2"></i>Resumen Financiero por Reunión</div>
+  <div class="card-body">
+    {% if financial_summary %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Grupo</th>
+            <th>Ingresos</th>
+            <th>Gastos</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in financial_summary %}
+          <tr>
+            <td>{{ row.meeting_date }}</td>
+            <td>{{ row.group.name }}</td>
+            <td>${{ row.total_income }}</td>
+            <td>${{ row.total_expense }}</td>
+            <td>${{ row.net_balance }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay datos financieros para el rango seleccionado.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

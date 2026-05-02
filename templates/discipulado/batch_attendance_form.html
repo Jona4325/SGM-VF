@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencia de Reunión - Discipulado{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title"><i class="fas fa-clipboard-check me-2" style="color: var(--forest-700);"></i>Toma de Asistencia</h2>
+    <p class="section-subtitle">{{ meeting.group.name }} - {{ meeting.meeting_date }}</p>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row row-cols-1 row-cols-md-2 g-2">
+        {% for field in form.disciple_fields %}
+        <div class="col">
+          <div class="form-check py-1">
+            {{ field }}
+            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Guardar Asistencia</button>
+        <a href="{% url 'discipulado:meeting_list' %}" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

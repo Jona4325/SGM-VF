@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Reunión{% endblock %}
+
+{% block body %}
+<div class="card shadow-sm border-0">
+  <div class="card-body p-4">
+    <h3 class="mb-3">Eliminar reunión</h3>
+    <p>¿Deseas eliminar a <strong>{{ object }}</strong>?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Eliminar</button>
+      <a href="{% url 'discipulado:meeting_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

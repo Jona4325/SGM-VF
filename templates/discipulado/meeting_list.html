@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Reuniones - Discipulado{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title"><i class="fas fa-calendar-check me-2" style="color: var(--forest-700);"></i>Reuniones</h2>
+    <p class="section-subtitle">Control por fecha de cada reunión de discipulado.</p>
+  </div>
+  <a href="{% url 'discipulado:meeting_create' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Nueva Reunión</a>
+</div>
+
+{% if meetings %}
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Grupo</th>
+        <th>Tema</th>
+        <th>Estado</th>
+        <th>Saldo</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for meeting in meetings %}
+      <tr>
+        <td>{{ meeting.meeting_date }}</td>
+        <td>{{ meeting.group.name }}</td>
+        <td>{{ meeting.topic|default:"-" }}</td>
+        <td>{{ meeting.get_status_display }}</td>
+        <td>${{ meeting.balance }}</td>
+        <td class="text-center">
+          <div class="d-flex gap-1 justify-content-center flex-wrap">
+            <a href="{% url 'discipulado:attendance_batch_create' meeting.pk %}" class="btn btn-sm btn-outline-success" title="Tomar asistencia"><i class="fas fa-clipboard-check"></i></a>
+            <a href="{% url 'discipulado:meeting_update' meeting.pk %}" class="btn-action btn-action-edit" title="Editar"><i class="fas fa-pencil-alt"></i></a>
+            <a href="{% url 'discipulado:meeting_delete' meeting.pk %}" class="btn-action btn-action-delete" title="Eliminar"><i class="fas fa-trash-alt"></i></a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info">No hay reuniones registradas.</div>
+{% endif %}
+{% endblock %}

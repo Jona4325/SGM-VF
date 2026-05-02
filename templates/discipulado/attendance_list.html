@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencias - Discipulado{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title"><i class="fas fa-clipboard-check me-2" style="color: var(--forest-700);"></i>Asistencias</h2>
+    <p class="section-subtitle">Registro de asistencia por reunión (incluye líder y colíder).</p>
+  </div>
+  <a href="{% url 'discipulado:meeting_list' %}" class="btn btn-primary"><i class="fas fa-calendar-alt me-1"></i>Ir a Reuniones</a>
+</div>
+
+{% if attendances %}
+<div class="table-responsive">
+  <table class="table sgm-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Grupo</th>
+        <th>Discípulo</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for attendance in attendances %}
+      <tr>
+        <td>{{ attendance.meeting.meeting_date }}</td>
+        <td>{{ attendance.meeting.group.name }}</td>
+        <td>{{ attendance.disciple }}</td>
+        <td>{{ attendance.get_status_display }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info">No hay asistencias registradas.</div>
+{% endif %}
+{% endblock %}
