@@ -26,6 +26,13 @@
     {% endfor %}
 {% endif %}
 
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="{% trans 'Buscar por nombre o apellido...' %}" value="{{ search_query|default:'' }}">
+        <button class="btn btn-primary" type="submit"><i class="fas fa-search me-1"></i>{% trans "Buscar" %}</button>
+    </div>
+</form>
+
 {% if teachers %}
     <div class="table-responsive">
         <table class="table sgm-table">
@@ -66,31 +73,7 @@
         </table>
     </div>
 
-    {% if is_paginated %}
-        <nav aria-label="Page navigation" class="mt-3">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">{% trans "Anterior" %}</a></li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">{% trans "Anterior" %}</span></li>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                    {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">{% trans "Siguiente" %}</a></li>
-                {% else %}
-                    <li class="page-item disabled"><span class="page-link">{% trans "Siguiente" %}</span></li>
-                {% endif %}
-            </ul>
-        </nav>
-    {% endif %}
+    {% include "academia/_pagination.html" %}
 
 {% else %}
     <div class="alert alert-info" role="alert">

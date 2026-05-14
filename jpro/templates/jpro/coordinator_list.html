@@ -15,7 +15,7 @@
   </a>
 </div>
 
-{% if coordinators %}
+{% if page_obj and page_obj.paginator.count %}
 <div class="table-responsive">
   <table class="table sgm-table">
     <thead>
@@ -47,6 +47,7 @@
     </tbody>
   </table>
 </div>
+{% include "jpro/_pagination.html" %}
 {% else %}
 <div class="alert alert-info mt-3">No hay coordinadores registrados.</div>
 {% endif %}

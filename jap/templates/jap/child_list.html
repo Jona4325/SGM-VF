@@ -15,7 +15,7 @@
   </a>
 </div>
 
-{% if children %}
+{% if page_obj and page_obj.paginator.count %}
 <div class="table-responsive">
   <table class="table sgm-table">
     <thead>
@@ -56,6 +56,7 @@
       {% endfor %}
     </tbody>
   </table>
+  {% include "jap/_pagination.html" %}
 </div>
 {% else %}
 <div class="alert alert-info mt-3">No hay niños registrados.</div>

@@ -14,9 +14,38 @@ from .forms import (
     BatchAssistanceForm # <-- Añadir BatchAssistanceForm
 )
 from django.contrib import messages
+from django.core.paginator import Paginator
 import traceback # Para debug si es necesario
 
 # Create your views here.
+
+
+class PaginationQueryMixin:
+    """Agrega querystring de filtros (sin page) para construir enlaces de paginación."""
+
+    def get_pagination_querystring(self):
+        params = self.request.GET.copy()
+        params.pop('page', None)
+        querystring = params.urlencode()
+        return f"&{querystring}" if querystring else ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pagination_query'] = self.get_pagination_querystring()
+        return context
+
+
+def get_pagination_query(request):
+    params = request.GET.copy()
+    params.pop('page', None)
+    querystring = params.urlencode()
+    return f"&{querystring}" if querystring else ""
+
+
+def paginate_queryset(request, queryset, per_page=10):
+    paginator = Paginator(queryset, per_page)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
 @login_required
 def calculated_age(born):
     if not born: return None
@@ -46,10 +75,13 @@ def coordinator_list(request):
         request: El objeto HttpRequest.
     Returns:
     """
-    print("pase por aqui")
-    coordinators = coordinator.objects.all()
-    print(coordinators)
-    return render(request, 'pequediks/coordinator_list.html', {'coordinators': coordinators})
+    coordinators = coordinator.objects.order_by('surname', 'name')
+    page_obj = paginate_queryset(request, coordinators, per_page=10)
+    return render(request, 'pequediks/coordinator_list.html', {
+        'coordinators': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def coordinator_create(request):
@@ -94,8 +126,13 @@ def coordinator_delete(request, pk):
 # vista para crear groups
 @login_required
 def group_list(request):
-    groups = group.objects.all()
-    return render(request, 'pequediks/group_list.html', {'groups': groups})
+    groups = group.objects.order_by('name')
+    page_obj = paginate_queryset(request, groups, per_page=10)
+    return render(request, 'pequediks/group_list.html', {
+        'groups': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def group_create(request):
@@ -128,10 +165,11 @@ def group_delete(request, pk):
         return redirect('pequediks:group_list')
     return render(request, 'pequediks/group_confirm_delete.html', {'group': group_obj})
 
-class ServerListView(LoginRequiredMixin,ListView):
+class ServerListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = server
     template_name = 'pequediks/server_list.html'  # Especifica tu template
     context_object_name = 'servers'  # Nombre de la variable en el template
+    paginate_by = 10
 
 class ServerDetailView(LoginRequiredMixin,DetailView):
     model = server
@@ -176,10 +214,15 @@ def child_list(request):
     """Vista para listar todos los niños."""
     # Obtén el queryset directamente
     children_list = child.objects.all().order_by('surname', 'name')
+    page_obj = paginate_queryset(request, children_list, per_page=10)
 
     # Pasa el queryset directamente al template.
     # La propiedad @property calculated_age estará disponible en cada objeto 'c' dentro del template.
-    return render(request, 'pequediks/child_list.html', {'children': children_list})
+    return render(request, 'pequediks/child_list.html', {
+        'children': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 @login_required
 def child_create(request): # <-- Renombrada
     """Vista para crear un nuevo niño."""
@@ -229,7 +272,12 @@ def assistance_list(request):
         'child', 'group', 'coordinator'  # 'date' no es una relación
     ).order_by('-date', 'child__surname', 'child__name') # Ordenar por fecha desc, luego por niño
 
-    return render(request, 'pequediks/assistance_list.html', {'assistances': assistances_list})
+    page_obj = paginate_queryset(request, assistances_list, per_page=15)
+    return render(request, 'pequediks/assistance_list.html', {
+        'assistances': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def assistance_create(request):
@@ -332,7 +380,12 @@ def assistance_delete(request, pk):
 def groupcoordinator_list(request):
     """Vista para listar todas las asignaciones de grupo-coordinador."""
     assignments = GroupCoordinator.objects.select_related('group', 'coordinator').order_by('group__name', 'coordinator__surname')
-    return render(request, 'pequediks/groupcoordinator_list.html', {'assignments': assignments})
+    page_obj = paginate_queryset(request, assignments, per_page=10)
+    return render(request, 'pequediks/groupcoordinator_list.html', {
+        'assignments': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def groupcoordinator_create(request):

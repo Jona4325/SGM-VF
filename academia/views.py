@@ -8,7 +8,7 @@ from django.views import View
 from django.forms import formset_factory
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from django.db import transaction
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
@@ -24,6 +24,23 @@ class SuperuserRequiredMixin(UserPassesTestMixin):
     """
     def test_func(self):
         return self.request.user.is_superuser
+
+
+class PaginationQueryMixin:
+    """
+    Agrega al contexto una querystring para paginación preservando filtros GET.
+    """
+
+    def get_pagination_querystring(self):
+        params = self.request.GET.copy()
+        params.pop('page', None)
+        querystring = params.urlencode()
+        return f"&{querystring}" if querystring else ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pagination_query'] = self.get_pagination_querystring()
+        return context
 
 @login_required
 def index(request):
@@ -50,16 +67,26 @@ def cursos(request):
 
 # Vistas para Teacher
 # El decorador @login_required no se usa en vistas basadas en clases. Se usa LoginRequiredMixin.
-class TeacherListView(LoginRequiredMixin, SuperuserRequiredMixin, ListView):
+class TeacherListView(PaginationQueryMixin, LoginRequiredMixin, SuperuserRequiredMixin, ListView):
     model = Teacher
     template_name = 'academia/teacher_list.html'
     context_object_name = 'teachers'
     paginate_by = 10
 
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('surname', 'name')
+        search_query = self.request.GET.get('q', '').strip()
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) | Q(surname__icontains=search_query)
+            )
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_page'] = 'teachers'
         context['page_title'] = 'Listado de Profesores'
+        context['search_query'] = self.request.GET.get('q', '').strip()
         return context
 
 class TeacherDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
@@ -114,7 +141,7 @@ class TeacherDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 # Vistas para Student
-class StudentListView(ListView):
+class StudentListView(PaginationQueryMixin, ListView):
     model = Student
     template_name = 'academia/student_list.html'
     context_object_name = 'students'
@@ -198,7 +225,7 @@ class StudentDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 # Vistas para Subject
-class SubjectListView(LoginRequiredMixin, SuperuserRequiredMixin, ListView):
+class SubjectListView(PaginationQueryMixin, LoginRequiredMixin, SuperuserRequiredMixin, ListView):
     model = Subject
     template_name = 'academia/subject_list.html'
     context_object_name = 'subjects'
@@ -262,7 +289,7 @@ class SubjectDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 # Vistas para Course
-class CourseListView(LoginRequiredMixin,ListView):
+class CourseListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Course
     template_name = 'academia/course_list.html'
     context_object_name = 'courses'
@@ -357,7 +384,7 @@ class CourseDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 # Vistas para Enrollment
-class EnrollmentListView(LoginRequiredMixin,ListView):
+class EnrollmentListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Enrollment
     template_name = 'academia/enrollment_list.html'
     context_object_name = 'enrollments'
@@ -474,7 +501,7 @@ class EnrollmentDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteVie
         return context
 
 # Vistas para AttendanceLog
-class AttendanceLogListView(LoginRequiredMixin,ListView):
+class AttendanceLogListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = AttendanceLog
     template_name = 'academia/attendancelog_list.html'
     context_object_name = 'attendancelogs'
@@ -891,7 +918,7 @@ class TakeGradesView(LoginRequiredMixin,View):
             return redirect(f"{reverse_lazy('academia:take-grades')}?course={course_id}&lesson_number={lesson_number_str}&grade_type={grade_type_str}")
 
 # CRUD views for Grade
-class GradeListView(LoginRequiredMixin,ListView):
+class GradeListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Grade
     template_name = 'academia/grade_list.html'
     context_object_name = 'grades'

@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# Block commits that include local/sensitive files.
+
+blocked_files=""
+
+while IFS= read -r file; do
+  case "$file" in
+    # SQLite/local DB files
+    db.sqlite3|*.sqlite3|*.sqlite|*.db)
+      blocked_files="$blocked_files$file\n"
+      ;;
+    # Environment secrets (allow template examples)
+    .env|.env.*)
+      if [ "$file" != ".env.example" ]; then
+        blocked_files="$blocked_files$file\n"
+      fi
+      ;;
+  esac
+done <<EOF
+$(git diff --cached --name-only)
+EOF
+
+if [ -n "$blocked_files" ]; then
+  echo ""
+  echo "ERROR: Commit bloqueado por incluir archivos locales/sensibles:"
+  printf "$blocked_files"
+  echo ""
+  echo "Para continuar, quitarlos del stage:"
+  echo "  git restore --staged <archivo>"
+  echo ""
+  echo "Recomendacion: versiona solo codigo, migraciones y plantillas de configuracion (.env.example)."
+  echo ""
+  exit 1
+fi
+
+exit 0

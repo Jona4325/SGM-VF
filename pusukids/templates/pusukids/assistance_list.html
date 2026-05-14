@@ -47,7 +47,7 @@
   </div>
 </div>
 
-{% if assistances %}
+{% if page_obj and page_obj.paginator.count %}
 <div class="table-responsive">
   <table class="table sgm-table">
     <thead>
@@ -91,6 +91,7 @@
     </tbody>
   </table>
 </div>
+{% include "pusukids/_pagination.html" %}
 {% else %}
 <div class="alert alert-info mt-3">No hay registros de asistencia.</div>
 {% endif %}

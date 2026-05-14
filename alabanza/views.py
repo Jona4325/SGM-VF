@@ -9,6 +9,23 @@ from .forms import CoordinatorForm, GroupForm, ServerForm, AssistanceForm,Assist
 
 from django.contrib import messages
 # Create your views here.
+
+
+class PaginationQueryMixin:
+    """Agrega querystring de filtros (sin page) para enlaces de paginación."""
+
+    def get_pagination_querystring(self):
+        params = self.request.GET.copy()
+        params.pop('page', None)
+        querystring = params.urlencode()
+        return f"&{querystring}" if querystring else ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pagination_query'] = self.get_pagination_querystring()
+        return context
+
+
 @login_required
 def index(request):
     """
@@ -22,10 +39,11 @@ def index(request):
     """
     return render(request, 'alabanza/index.html')
 
-class CoordinatorListView(LoginRequiredMixin,ListView):
+class CoordinatorListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Coordinator
     template_name = 'alabanza/coordinator_list.html' # Especifica tu template
     context_object_name = 'coordinators' # Nombre del objeto en el contexto del template
+    paginate_by = 10
 
 class CoordinatorCreateView(LoginRequiredMixin,CreateView):
     model = Coordinator
@@ -46,10 +64,11 @@ class CoordinatorDeleteView(LoginRequiredMixin,DeleteView):
 
 
 # Views para CRUD de Group
-class GroupListView(LoginRequiredMixin,ListView):
+class GroupListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Group
     template_name = 'alabanza/group_list.html'
     context_object_name = 'groups'
+    paginate_by = 10
 
 class GroupCreateView(LoginRequiredMixin,CreateView):
     model = Group
@@ -69,10 +88,11 @@ class GroupDeleteView(LoginRequiredMixin,DeleteView):
     success_url = reverse_lazy('alabanza:group_list')    
 
 # Vista para el CRUD de Server
-class ServerListView(LoginRequiredMixin,ListView):
+class ServerListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Server
     template_name = 'alabanza/server_list.html'
     context_object_name = 'servers'
+    paginate_by = 10
 
 class ServerCreateView(LoginRequiredMixin,CreateView):
     model = Server
@@ -92,10 +112,11 @@ class ServerDeleteView(LoginRequiredMixin,DeleteView):
     success_url = reverse_lazy('alabanza:server_list')
 
 # Crud para assistance
-class AssistanceListView(LoginRequiredMixin,ListView):
+class AssistanceListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = Assistance
     template_name = 'alabanza/assistance_list.html'
     context_object_name = 'assistance_list'
+    paginate_by = 15
 
 class AssistanceCreateView(LoginRequiredMixin,CreateView):
     model = Assistance

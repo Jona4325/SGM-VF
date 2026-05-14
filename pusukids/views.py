@@ -24,6 +24,34 @@ import traceback # Para debug si es necesario
 
 # Create your views here.
 
+
+class PaginationQueryMixin:
+    """Agrega querystring de filtros (sin page) para construir enlaces de paginación."""
+
+    def get_pagination_querystring(self):
+        params = self.request.GET.copy()
+        params.pop('page', None)
+        querystring = params.urlencode()
+        return f"&{querystring}" if querystring else ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pagination_query'] = self.get_pagination_querystring()
+        return context
+
+
+def get_pagination_query(request):
+    params = request.GET.copy()
+    params.pop('page', None)
+    querystring = params.urlencode()
+    return f"&{querystring}" if querystring else ""
+
+
+def paginate_queryset(request, queryset, per_page=10):
+    paginator = Paginator(queryset, per_page)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
+
 def calculated_age(born):
     if not born: return None
     today = date.today()
@@ -53,10 +81,13 @@ def coordinator_list(request):
         request: El objeto HttpRequest.
     Returns:
     """
-    print("pase por aqui")
-    coordinators = coordinator.objects.all()
-    print(coordinators)
-    return render(request, 'pusukids/coordinator_list.html', {'coordinators': coordinators})
+    coordinators = coordinator.objects.order_by('surname', 'name')
+    page_obj = paginate_queryset(request, coordinators, per_page=10)
+    return render(request, 'pusukids/coordinator_list.html', {
+        'coordinators': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def coordinator_create(request):
@@ -101,8 +132,13 @@ def coordinator_delete(request, pk):
 # vista para crear groups
 @login_required
 def group_list(request):
-    groups = group.objects.all()
-    return render(request, 'pusukids/group_list.html', {'groups': groups})
+    groups = group.objects.order_by('name')
+    page_obj = paginate_queryset(request, groups, per_page=10)
+    return render(request, 'pusukids/group_list.html', {
+        'groups': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def group_create(request):
@@ -135,10 +171,11 @@ def group_delete(request, pk):
         return redirect('pusukids:group_list')
     return render(request, 'pusukids/group_confirm_delete.html', {'group': group_obj})
 
-class ServerListView(LoginRequiredMixin,ListView):
+class ServerListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = server
     template_name = 'pusukids/server_list.html'  # Especifica tu template
     context_object_name = 'servers'  # Nombre de la variable en el template
+    paginate_by = 10
 
 class ServerDetailView(LoginRequiredMixin,DetailView):
     model = server
@@ -178,10 +215,11 @@ class ServerDeleteView(LoginRequiredMixin,DeleteView):
     success_url = reverse_lazy('pusukids:server_list') # Redirige a la lista después de borrar
 
 # --- Vistas para el CRUD de GroupAge (Refactorizadas a CBV) ---
-class GroupageListView(LoginRequiredMixin, ListView):
+class GroupageListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
     model = groupage
     template_name = 'pusukids/groupage_list.html'
     context_object_name = 'groupages'
+    paginate_by = 10
 
 class GroupageCreateView(LoginRequiredMixin, CreateView):
     model = groupage
@@ -241,9 +279,7 @@ def child_list(request):
     children_list = children_list.order_by('surname', 'name')    
 
     # Paginación
-    paginator = Paginator(children_list, 10) # 10 niños por página
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate_queryset(request, children_list, per_page=10)
     
     # Obtener todos los grupos de edad para los botones de filtro
     all_groupages = groupage.objects.all().order_by('name')
@@ -255,6 +291,7 @@ def child_list(request):
         'search_query': search_query,
         'all_groupages': all_groupages,
         'current_groupage_id': int(groupage_filter_id) if groupage_filter_id and groupage_filter_id.isdigit() else None,
+        'pagination_query': get_pagination_query(request),
     })
 
 @login_required
@@ -333,11 +370,15 @@ def assistance_list(request):
         date__month=today.month
     ).order_by('-date')
 
+    page_obj = paginate_queryset(request, assistances_list, per_page=15)
+
     return render(request, 'pusukids/assistance_list.html', {
-        'assistances': assistances_list,
+        'assistances': page_obj,
+        'page_obj': page_obj,
         'available_dates': available_dates,
         'search_surname': search_surname,
         'search_date_id': int(search_date_id) if search_date_id else None,
+        'pagination_query': get_pagination_query(request),
     })
 
 @login_required
@@ -436,7 +477,13 @@ def weekinfo_list(request):
         'fecha', 'group', 'coordinator'
     ).order_by('-fecha__date') # Ordenar por fecha más reciente
 
-    return render(request, 'pusukids/weekinfo_list.html', {'weekinfos': weekinfos_list})
+    page_obj = paginate_queryset(request, weekinfos_list, per_page=10)
+
+    return render(request, 'pusukids/weekinfo_list.html', {
+        'weekinfos': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def weekinfo_create(request):
@@ -503,7 +550,12 @@ def weekinfo_delete(request, pk):
 def expense_list(request):
     """Vista para listar todos los gastos."""
     expenses_list = expense.objects.select_related('fecha').order_by('-fecha__date', 'description')
-    return render(request, 'pusukids/expense_list.html', {'expenses': expenses_list})
+    page_obj = paginate_queryset(request, expenses_list, per_page=10)
+    return render(request, 'pusukids/expense_list.html', {
+        'expenses': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def expense_create(request):
@@ -567,7 +619,12 @@ def expense_delete(request, pk):
 def fecha_list(request):
     """Vista para listar todas las fechas (semanas)."""
     fechas_list = fecha.objects.order_by('-date')
-    return render(request, 'pusukids/fecha_list.html', {'fechas': fechas_list})
+    page_obj = paginate_queryset(request, fechas_list, per_page=10)
+    return render(request, 'pusukids/fecha_list.html', {
+        'fechas': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def fecha_create(request):
@@ -639,7 +696,12 @@ def fecha_delete(request, pk):
 def groupcoordinator_list(request):
     """Vista para listar todas las asignaciones de grupo-coordinador."""
     assignments = GroupCoordinator.objects.select_related('group', 'coordinator').order_by('group__name', 'coordinator__surname')
-    return render(request, 'pusukids/groupcoordinator_list.html', {'assignments': assignments})
+    page_obj = paginate_queryset(request, assignments, per_page=10)
+    return render(request, 'pusukids/groupcoordinator_list.html', {
+        'assignments': page_obj,
+        'page_obj': page_obj,
+        'pagination_query': get_pagination_query(request),
+    })
 
 @login_required
 def groupcoordinator_create(request):

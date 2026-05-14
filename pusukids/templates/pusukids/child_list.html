@@ -47,7 +47,7 @@
   {% endfor %}
 </div>
 
-{% if page_obj %}
+{% if page_obj and page_obj.paginator.count %}
 <div class="table-responsive">
   <table class="table sgm-table">
     <thead>
@@ -98,28 +98,7 @@
   </table>
 </div>
 
-<!-- Paginación -->
-<nav aria-label="Page navigation">
-  <ul class="pagination justify-content-center">
-    {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page=1&status={{ current_status }}&q={{ search_query|urlencode }}&groupage={{ current_groupage_id|default:'' }}">« Primera</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ current_status }}&q={{ search_query|urlencode }}&groupage={{ current_groupage_id|default:'' }}">Anterior</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">« Primera</span></li>
-      <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-    {% endif %}
-    <li class="page-item active" aria-current="page">
-      <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
-    </li>
-    {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ current_status }}&q={{ search_query|urlencode }}&groupage={{ current_groupage_id|default:'' }}">Siguiente</a></li>
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&status={{ current_status }}&q={{ search_query|urlencode }}&groupage={{ current_groupage_id|default:'' }}">Última »</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
-      <li class="page-item disabled"><span class="page-link">Última »</span></li>
-    {% endif %}
-  </ul>
-</nav>
+{% include "pusukids/_pagination.html" %}
 
 {% else %}
 <div class="alert alert-info mt-3">No hay niños que coincidan con el filtro.</div>
