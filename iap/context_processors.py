@@ -32,25 +32,26 @@ def user_app_permissions(request):
     else:
         group_names = set(user.groups.values_list('name', flat=True))
 
-        if 'cunakids_staff' in group_names:
+        # Soporta nombres legacy y nombres amigables creados en admin.
+        if {'cunakids_staff', 'Cunakids'} & group_names:
             app_perms['can_access_cunakids'] = True
-        if 'Maestros' in group_names:
+        if {'Maestros', 'academia_staff', 'Academia'} & group_names:
             app_perms['can_access_academia'] = True
-        if 'alabanza_staff' in group_names:
+        if {'alabanza_staff', 'Alabanza'} & group_names:
             app_perms['can_access_alabanza'] = True
-        if 'anfitriones_staff' in group_names:
+        if {'anfitriones_staff', 'Anfitriones'} & group_names:
             app_perms['can_access_anfitriones'] = True
-        if 'discipulado_staff' in group_names:
+        if {'discipulado_staff', 'Discipulado'} & group_names:
             app_perms['can_access_discipulado'] = True
-        if 'encuentros_staff' in group_names:
+        if {'encuentros_staff', 'Encuentros'} & group_names:
             app_perms['can_access_encuentros'] = True
-        if 'jap_staff' in group_names:
+        if {'jap_staff', 'JAP'} & group_names:
             app_perms['can_access_jap'] = True
-        if 'pusukids_staff' in group_names:
+        if {'pusukids_staff', 'Pusukids'} & group_names:
             app_perms['can_access_pusukids'] = True
-        if 'pequediks_staff' in group_names:
+        if {'pequediks_staff', 'pequekids_staff', 'Pequediks', 'Pequekids'} & group_names:
             app_perms['can_access_pequediks'] = True
-        if 'jpro_staff' in group_names:
+        if {'jpro_staff', 'Jpro', 'JPRO'} & group_names:
             app_perms['can_access_jpro'] = True
 
 
