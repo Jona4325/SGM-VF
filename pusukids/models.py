@@ -23,8 +23,11 @@ class coordinator(TenantAwareModel):
         blank=True,
         verbose_name=_("user account"),
         related_name='pusukids_staff',
-        help_text=_("Link this coordinator profile to a Django user account to allow login.")
+        help_text=_(
+            "Link this coordinator profile to a Django user account to enable login."
+        )
     )
+
     name = models.CharField(max_length=128)
     surname = models.CharField(max_length=128)
 
@@ -58,7 +61,9 @@ class server(TenantAwareModel):
 
 class groupage(TenantAwareModel):
     name = models.CharField(max_length=8)
-    description = models.CharField(max_length=16)
+
+    # CAMBIO IMPORTANTE PARA MYSQL
+    description = models.TextField()
 
     class Meta:
         unique_together = [('tenant', 'name')]
@@ -70,6 +75,7 @@ class groupage(TenantAwareModel):
 class child(TenantAwareModel):
     STATUS_ACTIVO = 'activo'
     STATUS_PROMOVIDO = 'promovido'
+
     STATUS_CHOICES = [
         (STATUS_ACTIVO, 'Activo'),
         (STATUS_PROMOVIDO, 'Promovido'),
@@ -81,7 +87,12 @@ class child(TenantAwareModel):
     groupage = models.ForeignKey(groupage, on_delete=models.PROTECT)
     parent_name = models.CharField(max_length=128, blank=True)
     contact_phone = models.CharField(max_length=16, blank=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_ACTIVO)
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=STATUS_ACTIVO
+    )
 
     class Meta:
         unique_together = [('tenant', 'name', 'surname')]
@@ -90,10 +101,13 @@ class child(TenantAwareModel):
     def calculated_age(self):
         if not self.birthday:
             return None
+
         today = date.today()
         age = today.year - self.birthday.year
+
         if (today.month, today.day) < (self.birthday.month, self.birthday.day):
             age -= 1
+
         return age
 
     def __str__(self):
@@ -129,6 +143,7 @@ class weekinfo(TenantAwareModel):
     total_kids = models.IntegerField(default=0)
     total_servers = models.IntegerField(default=0)
     money_collected = models.FloatField(default=0.0)
+
     fecha = models.ForeignKey(fecha, on_delete=models.PROTECT)
     coordinator = models.ForeignKey(coordinator, on_delete=models.PROTECT)
     group = models.ForeignKey(group, on_delete=models.PROTECT)
@@ -136,6 +151,7 @@ class weekinfo(TenantAwareModel):
     def __str__(self):
         fecha_str = str(self.fecha.date) if self.fecha else "Sin Fecha"
         grupo_str = self.group.name if self.group else "Sin Grupo"
+
         return f"Info Semana: {fecha_str} - Grupo: {grupo_str}"
 
 
@@ -156,7 +172,7 @@ class GroupCoordinator(TenantAwareModel):
 
     class Meta:
         unique_together = [('tenant', 'group', 'coordinator')]
-        verbose_name = "AsignaciÃ³n Grupo-Coordinador"
+        verbose_name = "Asignación Grupo-Coordinador"
         verbose_name_plural = "Asignaciones Grupo-Coordinador"
 
     def __str__(self):

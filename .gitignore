@@ -42,4 +42,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.sublime-project
-*.sublime-workspace
+*.sublime-workspace*.sqlite3
+*.sqlite3
+data.json
+__pycache__/

@@ -17,11 +17,15 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-sgm-multitenant-local'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'sgm-5afff7dfce13.herokuapp.com',  # Dominio de Heroku
+    'sgm.alianzapusuqui.org',
+    '178.104.55.26',
     'localhost',
-    '127.0.0.1',
+    '127.0.0.1'
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://sgm.alianzapusuqui.org'
+]
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -88,12 +92,14 @@ WSGI_APPLICATION = 'iap.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Usando SQLite como base de datos
-        'NAME': BASE_DIR / "db.sqlite3",  # Ruta al archivo de base de datos
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sgmdb',
+        'USER': 'sgmuser',
+        'PASSWORD': 'UnaPasswordSegura123!',
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
-
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
