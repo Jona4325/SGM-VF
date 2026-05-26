@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ form_title|default:"Formulario de Niños" }}{% endblock %}
+{% block title %}{{ action_title|default:form_title|default:"Formulario de Niños" }}{% endblock %}
 
 {% block body %}
-<h1>{{ form_title|default:"Formulario de Niños" }}</h1>
+<h1>{{ action_title|default:form_title|default:"Formulario de Niños" }}</h1>
 
 <form method="post">
     {% csrf_token %}
@@ -24,7 +24,7 @@
     ... (repetir para otros campos) ...
     #}
 -->
-    <button type="submit" class="btn btn-success">{{ action }}</button>
+    <button type="submit" class="btn btn-success">{{ submit_button_text|default:action|default:"Guardar" }}</button>
     <a href="{% url 'cunakids:child_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}

@@ -16,6 +16,22 @@
   </a>
 </div>
 
+{% if chart_labels and chart_values %}
+<div class="card ministry-card mt-3 mb-4">
+  <div class="card-body p-4">
+    <h5 class="mb-3">
+      <i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>Niños asistentes por semana
+    </h5>
+    <div style="height: 320px;">
+      <canvas id="week-kids-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+{{ chart_labels|json_script:"week-chart-labels" }}
+{{ chart_values|json_script:"week-chart-values" }}
+{% endif %}
+
 {% if page_obj and page_obj.paginator.count %}
 <div class="table-responsive">
   <table class="table sgm-table">
@@ -66,4 +82,64 @@
     <i class="fas fa-arrow-left me-1"></i>Volver
   </a>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{% if chart_labels and chart_values %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById('week-chart-labels').textContent);
+  const values = JSON.parse(document.getElementById('week-chart-values').textContent);
+
+  const ctx = document.getElementById('week-kids-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Niños asistentes',
+          data: values,
+          borderColor: '#1f5f46',
+          backgroundColor: 'rgba(31, 95, 70, 0.15)',
+          pointBackgroundColor: '#1f5f46',
+          pointBorderColor: '#1f5f46',
+          pointRadius: 4,
+          tension: 0.25,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            },
+            title: {
+              display: true,
+              text: 'Total de niños'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Semana'
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endif %}
 {% endblock %}

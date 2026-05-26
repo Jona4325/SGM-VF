@@ -3,28 +3,69 @@
 {% block title %}{{ form_title|default:"Formulario de Servidor" }}{% endblock %}
 
 {% block body %}
-<h1>{{ form_title|default:"Formulario de Servidor" }}</h1>
+<div class="section-header">
+    <div>
+        <h2 class="section-title">
+            <i class="fas fa-hands-helping me-2" style="color: var(--forest-700);"></i>{{ form_title|default:"Formulario de Servidor" }}
+        </h2>
+        <p class="section-subtitle">Completa la información del servidor para Pusukids.</p>
+    </div>
+</div>
 
-<form method="post">
-    {% csrf_token %} {# ¡Importante para seguridad! #}
+<div class="card ministry-card mt-3">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
 
-    {{ form.as_p }} {# Renderiza el formulario como párrafos, puedes personalizarlo más #}
-    {# Ejemplo de renderizado manual con Bootstrap si prefieres más control:
-    {% for field in form %}
-        <div class="mb-3">
-            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-                <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
             {% endif %}
-            {% for error in field.errors %}
-                <div class="invalid-feedback d-block">{{ error }}</div>
-            {% endfor %}
-        </div>
-    {% endfor %}
-    #}
 
-    <button type="submit" class="btn btn-success">{{ submit_button_text|default:"Guardar" }}</button>
-    <a href="{% url 'pusukids:server_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.name.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.surname.id_for_label }}" class="form-label">{{ form.surname.label }}</label>
+                    {{ form.surname }}
+                    {% if form.surname.errors %}
+                    <div class="invalid-feedback d-block">{{ form.surname.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.coordinator.id_for_label }}" class="form-label">{{ form.coordinator.label }}</label>
+                    {{ form.coordinator }}
+                    {% if form.coordinator.errors %}
+                    <div class="invalid-feedback d-block">{{ form.coordinator.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.group.id_for_label }}" class="form-label">{{ form.group.label }}</label>
+                    {{ form.group }}
+                    {% if form.group.errors %}
+                    <div class="invalid-feedback d-block">{{ form.group.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i>{{ submit_button_text|default:"Guardar" }}
+                </button>
+                <a href="{% url 'pusukids:server_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

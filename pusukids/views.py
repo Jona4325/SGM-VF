@@ -19,7 +19,7 @@ from .forms import (
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import ProtectedError, Q
+from django.db.models import ProtectedError, Q, Count
 import traceback # Para debug si es necesario
 
 # Create your views here.
@@ -72,6 +72,124 @@ def index(request):
     """
     return render(request, 'pusukids/index.html')
 
+
+@login_required
+def reports_menu(request):
+    """Menú principal de reportes de Pusukids."""
+    return render(request, 'pusukids/reports_menu.html')
+
+
+@login_required
+def attendance_report_groupage(request):
+    """Reporte de asistencia de niños agrupado por grupo de edad."""
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    attendances_qs = assistance.objects.select_related('child__groupage', 'date').filter(attended=True)
+
+    if start_date:
+        attendances_qs = attendances_qs.filter(date__date__gte=start_date)
+    if end_date:
+        attendances_qs = attendances_qs.filter(date__date__lte=end_date)
+
+    grouped_report = (
+        attendances_qs
+        .values('child__groupage__name')
+        .annotate(
+            total_asistencias=Count('id'),
+            ninos_unicos=Count('child', distinct=True),
+        )
+        .order_by('child__groupage__name')
+    )
+
+    chart_labels = [row['child__groupage__name'] for row in grouped_report]
+    chart_values = [row['total_asistencias'] for row in grouped_report]
+
+    return render(request, 'pusukids/attendance_report_groupage.html', {
+        'report_rows': grouped_report,
+        'start_date': start_date,
+        'end_date': end_date,
+        'chart_labels': chart_labels,
+        'chart_values': chart_values,
+    })
+
+
+@login_required
+def attendance_report_children_monthly_pivot(request):
+    """Reporte pivote: niños en filas y meses en columnas (asistencias marcadas como presentes)."""
+    current_year = date.today().year
+    selected_year_str = request.GET.get('year', str(current_year)).strip()
+    selected_groupage_id = request.GET.get('groupage', '').strip()
+
+    try:
+        selected_year = int(selected_year_str)
+    except ValueError:
+        selected_year = current_year
+
+    children_qs = child.objects.select_related('groupage').order_by('surname', 'name')
+    if selected_groupage_id.isdigit():
+        children_qs = children_qs.filter(groupage_id=selected_groupage_id)
+
+    attendance_counts_qs = (
+        assistance.objects
+        .filter(attended=True, date__date__year=selected_year)
+        .values('child_id', 'date__date__month')
+        .annotate(total=Count('id'))
+    )
+
+    if selected_groupage_id.isdigit():
+        attendance_counts_qs = attendance_counts_qs.filter(child__groupage_id=selected_groupage_id)
+
+    pivot_map = {
+        (row['child_id'], row['date__date__month']): row['total']
+        for row in attendance_counts_qs
+    }
+
+    months = [
+        (1, 'Ene'), (2, 'Feb'), (3, 'Mar'), (4, 'Abr'),
+        (5, 'May'), (6, 'Jun'), (7, 'Jul'), (8, 'Ago'),
+        (9, 'Sep'), (10, 'Oct'), (11, 'Nov'), (12, 'Dic'),
+    ]
+
+    pivot_rows = []
+    month_totals = {month_num: 0 for month_num, _ in months}
+    grand_total = 0
+
+    for kid in children_qs:
+        row_months = []
+        row_total = 0
+        for month_num, _ in months:
+            count_value = pivot_map.get((kid.pk, month_num), 0)
+            row_months.append(count_value)
+            row_total += count_value
+            month_totals[month_num] += count_value
+        grand_total += row_total
+        pivot_rows.append({
+            'child': kid,
+            'months': row_months,
+            'row_total': row_total,
+        })
+
+    available_years = list(
+        fecha.objects
+        .order_by('-date')
+        .values_list('date__year', flat=True)
+        .distinct()
+    )
+    if not available_years:
+        available_years = [current_year]
+
+    return render(request, 'pusukids/attendance_report_children_monthly_pivot.html', {
+        'pivot_rows': pivot_rows,
+        'months': months,
+        'month_totals': [month_totals[m[0]] for m in months],
+        'grand_total': grand_total,
+        'selected_year': selected_year,
+        'available_years': available_years,
+        'selected_groupage_id': int(selected_groupage_id) if selected_groupage_id.isdigit() else None,
+        'groupage_options': groupage.objects.order_by('name'),
+    })
+
 @login_required
 def coordinator_list(request):
     """
@@ -98,10 +216,16 @@ def coordinator_create(request):
         form = CoordinatorForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Coordinador registrado exitosamente.')
             return redirect('pusukids:coordinator_list')
     else:
         form = CoordinatorForm()
-    return render(request, 'pusukids/coordinator_form.html', {'form': form, 'action': 'Crear'})
+    return render(request, 'pusukids/coordinator_form.html', {
+        'form': form,
+        'action': 'Crear',
+        'form_title': 'Registrar Nuevo Coordinador',
+        'submit_button_text': 'Guardar',
+    })
 
 @login_required
 def coordinator_update(request, pk):
@@ -113,10 +237,16 @@ def coordinator_update(request, pk):
         form = CoordinatorForm(request.POST, instance=coordinator_obj)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Coordinador actualizado exitosamente.')
             return redirect('pusukids:coordinator_list')
     else:
         form = CoordinatorForm(instance=coordinator_obj)
-    return render(request, 'pusukids/coordinator_form.html', {'form': form, 'action': 'Actualizar'})
+    return render(request, 'pusukids/coordinator_form.html', {
+        'form': form,
+        'action': 'Actualizar',
+        'form_title': f'Editar Coordinador: {coordinator_obj.name} {coordinator_obj.surname}',
+        'submit_button_text': 'Actualizar',
+    })
 
 @login_required
 def coordinator_delete(request, pk):
@@ -146,10 +276,15 @@ def group_create(request):
         form = GroupForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Grupo registrado exitosamente.')
             return redirect('pusukids:group_list')
     else:
         form = GroupForm()
-    return render(request, 'pusukids/group_form.html', {'form': form})
+    return render(request, 'pusukids/group_form.html', {
+        'form': form,
+        'form_title': 'Registrar Nuevo Grupo',
+        'submit_button_text': 'Guardar',
+    })
 
 @login_required
 def group_update(request, pk):
@@ -158,10 +293,15 @@ def group_update(request, pk):
         form = GroupForm(request.POST, instance=group_obj)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Grupo actualizado exitosamente.')
             return redirect('pusukids:group_list')
     else:
         form = GroupForm(instance=group_obj)
-    return render(request, 'pusukids/group_form.html', {'form': form})
+    return render(request, 'pusukids/group_form.html', {
+        'form': form,
+        'form_title': f'Editar Grupo: {group_obj.name}',
+        'submit_button_text': 'Actualizar',
+    })
 
 @login_required
 def group_delete(request, pk):
@@ -310,7 +450,12 @@ def child_create(request): # <-- Renombrada
     else:
         form = ChildForm() # <-- Cambiado
     # Asegúrate que el template existe o renómbralo
-    return render(request, 'pusukids/child_form.html', {'form': form, 'action': 'Registrar'}) # <-- Cambiado template
+    return render(request, 'pusukids/child_form.html', {
+        'form': form,
+        'action': 'Registrar',
+        'form_title': 'Registrar Nuevo Niño',
+        'submit_button_text': 'Guardar',
+    }) # <-- Cambiado template
 
 @login_required
 def child_update(request, pk): # <-- Renombrada
@@ -331,7 +476,14 @@ def child_update(request, pk): # <-- Renombrada
     current_age = calculated_age(child_obj.birthday) if child_obj.birthday else "N/A"
     action_title = f"Editar Niño: {child_obj.name} {child_obj.surname} (Edad: {current_age})"
     # Asegúrate que el template existe o renómbralo
-    return render(request, 'pusukids/child_form.html', {'form': form, 'action': 'Actualizar', 'action_title': action_title}) # <-- Cambiado template
+    return render(request, 'pusukids/child_form.html', {
+        'form': form,
+        'action': 'Actualizar',
+        'action_title': action_title,
+        'form_title': action_title,
+        'submit_button_text': 'Actualizar',
+    }) # <-- Cambiado template
+
 
 @login_required
 def child_delete(request, pk): # <-- Renombrada
@@ -384,9 +536,11 @@ def assistance_list(request):
 @login_required
 def assistance_create(request):
     """
-    Vista para crear registros de asistencia en lote para todos los niños.
+    Vista para crear registros de asistencia en lote filtrando primero por grupo de edad.
     """
-    children_list = child.objects.filter(status=child.STATUS_ACTIVO).order_by('surname', 'name')
+    children_list = child.objects.none()
+    selected_groupage = None
+    selected_groupage_id = request.GET.get('groupage')
 
     if request.method == 'POST':
         form = BatchAssistanceForm(request.POST)
@@ -394,6 +548,23 @@ def assistance_create(request):
             date_obj = form.cleaned_data['date']
             group_obj = form.cleaned_data['group']
             coordinator_obj = form.cleaned_data['coordinator']
+            selected_groupage = form.cleaned_data['groupage']
+
+            children_list = child.objects.filter(
+                status=child.STATUS_ACTIVO,
+                groupage=selected_groupage,
+            ).order_by('surname', 'name')
+
+            if not children_list.exists():
+                messages.warning(request, 'No hay niños activos en el grupo de edad seleccionado.')
+                return render(request, 'pusukids/assistance_batch_form.html', {
+                    'form': form,
+                    'children': children_list,
+                    'selected_groupage': selected_groupage,
+                    'selected_groupage_id': selected_groupage.pk,
+                    'groupage_options': groupage.objects.order_by('name'),
+                    'action_title': 'Registrar Asistencia Grupal'
+                })
 
             assistances_to_create = []
             for child_obj in children_list:
@@ -415,12 +586,38 @@ def assistance_create(request):
                     return redirect('pusukids:assistance_list')
                 except IntegrityError:
                     messages.error(request, 'Error: No se pudo registrar la asistencia. Es probable que ya existan registros para uno o más niños en la fecha seleccionada.')
+            else:
+                messages.warning(request, 'No hay niños disponibles para registrar asistencia con ese filtro.')
+        else:
+            posted_groupage_id = request.POST.get('groupage')
+            if posted_groupage_id and posted_groupage_id.isdigit():
+                selected_groupage = groupage.objects.filter(pk=posted_groupage_id).first()
+                if selected_groupage:
+                    children_list = child.objects.filter(
+                        status=child.STATUS_ACTIVO,
+                        groupage=selected_groupage,
+                    ).order_by('surname', 'name')
     else:
-        form = BatchAssistanceForm()
+        if selected_groupage_id and selected_groupage_id.isdigit():
+            selected_groupage = groupage.objects.filter(pk=selected_groupage_id).first()
+            if selected_groupage:
+                children_list = child.objects.filter(
+                    status=child.STATUS_ACTIVO,
+                    groupage=selected_groupage,
+                ).order_by('surname', 'name')
+                form = BatchAssistanceForm(initial={'groupage': selected_groupage.pk})
+            else:
+                form = BatchAssistanceForm()
+                selected_groupage_id = None
+        else:
+            form = BatchAssistanceForm()
 
     return render(request, 'pusukids/assistance_batch_form.html', {
         'form': form,
         'children': children_list,
+        'selected_groupage': selected_groupage,
+        'selected_groupage_id': selected_groupage.pk if selected_groupage else None,
+        'groupage_options': groupage.objects.order_by('name'),
         'action_title': 'Registrar Asistencia Grupal'
     })
 
@@ -432,10 +629,10 @@ def assistance_update(request, pk):
         form = AssistanceForm(request.POST, instance=assistance_obj)
         if form.is_valid():
             form.save()
-            # messages.success(request, 'Registro de asistencia actualizado.')
+            messages.success(request, 'Registro de asistencia actualizado exitosamente.')
             return redirect('pusukids:assistance_list')
-        # else:
-            # messages.error(request, 'Por favor corrige los errores.')
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
     else:
         form = AssistanceForm(instance=assistance_obj)
 
@@ -447,7 +644,8 @@ def assistance_update(request, pk):
     return render(request, 'pusukids/assistance_form.html', {
         'form': form,
         'action': 'Actualizar',
-        'action_title': action_title
+        'action_title': action_title,
+        'submit_button_text': 'Actualizar',
     })
 
 @login_required
@@ -477,11 +675,18 @@ def weekinfo_list(request):
         'fecha', 'group', 'coordinator'
     ).order_by('-fecha__date') # Ordenar por fecha más reciente
 
+    # Datos para gráfico: total de niños asistentes por semana (orden cronológico ascendente)
+    chart_qs = weekinfo.objects.select_related('fecha').order_by('fecha__date')
+    chart_labels = [w.fecha.date.strftime('%d/%m/%Y') for w in chart_qs]
+    chart_values = [w.total_kids for w in chart_qs]
+
     page_obj = paginate_queryset(request, weekinfos_list, per_page=10)
 
     return render(request, 'pusukids/weekinfo_list.html', {
         'weekinfos': page_obj,
         'page_obj': page_obj,
+        'chart_labels': chart_labels,
+        'chart_values': chart_values,
         'pagination_query': get_pagination_query(request),
     })
 

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Reporte de Asistencia por Grupo de Edad — Pusukids{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-chart-bar me-2" style="color: var(--forest-700);"></i>Asistencia por Grupo de Edad
+    </h2>
+    <p class="section-subtitle">Reporte de asistencias marcadas como presentes, agrupadas por grupo de edad.</p>
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-2"></i>Filtros</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Desde</label>
+        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Filtrar</button>
+      </div>
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <a href="{% url 'pusukids:attendance_report_groupage' %}" class="btn btn-outline-secondary w-100">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if chart_labels and chart_values %}
+<div class="card ministry-card mb-4">
+  <div class="card-body p-4">
+    <h5 class="mb-3">
+      <i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>Asistencias por grupo de edad
+    </h5>
+    <div style="height: 320px;">
+      <canvas id="attendance-groupage-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+{{ chart_labels|json_script:"attendance-groupage-labels" }}
+{{ chart_values|json_script:"attendance-groupage-values" }}
+{% endif %}
+
+<div class="sgm-form-card">
+  <div class="card-header"><i class="fas fa-table me-2"></i>Detalle del reporte</div>
+  <div class="card-body">
+    {% if report_rows %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Grupo de Edad</th>
+            <th class="text-end">Total Asistencias</th>
+            <th class="text-end">Niños Únicos</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report_rows %}
+          <tr>
+            <td>{{ row.child__groupage__name }}</td>
+            <td class="text-end">{{ row.total_asistencias }}</td>
+            <td class="text-end">{{ row.ninos_unicos }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay asistencias registradas para los filtros seleccionados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+  <a href="{% url 'pusukids:reports_menu' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver a Reportes
+  </a>
+  <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">Volver al Inicio de Pusukids</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{% if chart_labels and chart_values %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById('attendance-groupage-labels').textContent);
+  const values = JSON.parse(document.getElementById('attendance-groupage-values').textContent);
+
+  const ctx = document.getElementById('attendance-groupage-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Total asistencias',
+          data: values,
+          backgroundColor: 'rgba(31, 95, 70, 0.75)',
+          borderColor: '#1f5f46',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            },
+            title: {
+              display: true,
+              text: 'Asistencias'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Grupo de edad'
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}

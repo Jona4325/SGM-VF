@@ -1,12 +1,14 @@
 
 {% extends 'base.html' %}
 
+{% block title %}{{ form_title|default:action|default:'Formulario de Coordinador' }}{% endblock %}
+
 {% block body %}
-    <h1>{{ action }} Coordinador</h1>
+    <h1>{{ form_title|default:action|default:'Formulario de Coordinador' }}</h1>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">{{ action }}</button>
+        <button type="submit" class="btn btn-success">{{ submit_button_text|default:action|default:'Guardar' }}</button>
         <a href="{% url 'cunakids:coordinator_list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 {% endblock %}

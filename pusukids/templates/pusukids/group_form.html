@@ -3,13 +3,53 @@
 {% block title %}{{ form_title|default:"Formulario de Grupos" }}{% endblock %}
 
 {% block body %}
-<h1>{{ form_title|default:"Formulario de Grupos" }}</h1>
+<div class="section-header">
+    <div>
+        <h2 class="section-title">
+            <i class="fas fa-layer-group me-2" style="color: var(--forest-700);"></i>{{ form_title|default:"Formulario de Grupos" }}
+        </h2>
+        <p class="section-subtitle">Define y organiza los grupos de Pusukids.</p>
+    </div>
+</div>
 
-<form method="post">
-    {% csrf_token %} {# ¡Importante para seguridad! #}
+<div class="card ministry-card mt-3">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
 
-    {{ form.as_p }} {# Renderiza el formulario como párrafos, puedes personalizarlo más #}    
-    <button type="submit" class="btn btn-success">{{ submit_button_text|default:"Guardar" }}</button>
-    <a href="{% url 'pusukids:group_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.name.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="invalid-feedback d-block">{{ form.description.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i>{{ submit_button_text|default:"Guardar" }}
+                </button>
+                <a href="{% url 'pusukids:group_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

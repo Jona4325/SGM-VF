@@ -1,69 +1,115 @@
-{% extends 'base.html' %} <!-- Asegúrate que esta ruta a tu base.html sea correcta -->
+{% extends 'base.html' %}
+
+{% block title %}{{ action_title|default:"Registrar Asistencia Grupal" }}{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="mb-0">{{ action_title|default:"Registrar Asistencia Grupal" }}</h2>
-        <a href="{% url 'pusukids:index' %}" class="btn btn-secondary">Regresar al Menú Principal</a>
+<div class="section-header">
+    <div>
+        <h2 class="section-title">
+            <i class="fas fa-clipboard-check me-2" style="color: var(--forest-700);"></i>{{ action_title|default:"Registrar Asistencia Grupal" }}
+        </h2>
+        <p class="section-subtitle">Primero filtra por grupo de edad para cargar solo los niños correspondientes.</p>
     </div>
-
-    <form method="post">
-        {% csrf_token %}
-
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
-
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
-                {{ form.date }}
-                {% if form.date.errors %}<div class="invalid-feedback d-block">{{ form.date.errors }}</div>{% endif %}
-            </div>
-            <div class="col-md-4">
-                <label for="{{ form.group.id_for_label }}" class="form-label">{{ form.group.label }}</label>
-                {{ form.group }}
-                {% if form.group.errors %}<div class="invalid-feedback d-block">{{ form.group.errors }}</div>{% endif %}
-            </div>
-            <div class="col-md-4">
-                <label for="{{ form.coordinator.id_for_label }}" class="form-label">{{ form.coordinator.label }}</label>
-                {{ form.coordinator }}
-                {% if form.coordinator.errors %}<div class="invalid-feedback d-block">{{ form.coordinator.errors }}</div>{% endif %}
-            </div>
-        </div>
-
-        <h3 class="mt-4">Lista de Niños</h3>
-        <table class="table table-striped table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th class="text-center">¿Asistió?</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for child_obj in children %}
-                <tr>
-                    <td>{{ child_obj.name }}</td>
-                    <td>{{ child_obj.surname }}</td>
-                    <td class="text-center">
-                        <input type="checkbox" name="attended_{{ child_obj.pk }}" id="attended_{{ child_obj.pk }}" class="form-check-input" value="on">
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center">No hay niños registrados.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Guardar Asistencias</button>
-            <a href="{% url 'pusukids:assistance_list' %}" class="btn btn-secondary">Cancelar</a>
-        </div>
-    </form>
+    <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Volver al Menú
+    </a>
 </div>
+
+<div class="card ministry-card mt-3">
+    <div class="card-body p-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6 col-lg-4">
+                <label for="groupage-filter" class="form-label">Grupo de Edad</label>
+                <select id="groupage-filter" name="groupage" class="form-control" required>
+                    <option value="">Selecciona un grupo de edad</option>
+                    {% for ga in groupage_options %}
+                    <option value="{{ ga.pk }}" {% if selected_groupage_id == ga.pk %}selected{% endif %}>{{ ga.name }} - {{ ga.description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-1"></i>Cargar Niños
+                </button>
+                <a href="{% url 'pusukids:assistance_create' %}" class="btn btn-outline-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_groupage %}
+<div class="card ministry-card mt-3">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h5 class="mb-0">Niños activos del grupo: <strong>{{ selected_groupage.name }}</strong></h5>
+            <span class="badge bg-success">Total: {{ children|length }}</span>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.groupage.as_hidden }}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="{{ form.date.id_for_label }}" class="form-label">{{ form.date.label }}</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}<div class="invalid-feedback d-block">{{ form.date.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.group.id_for_label }}" class="form-label">{{ form.group.label }}</label>
+                    {{ form.group }}
+                    {% if form.group.errors %}<div class="invalid-feedback d-block">{{ form.group.errors }}</div>{% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label for="{{ form.coordinator.id_for_label }}" class="form-label">{{ form.coordinator.label }}</label>
+                    {{ form.coordinator }}
+                    {% if form.coordinator.errors %}<div class="invalid-feedback d-block">{{ form.coordinator.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            {% if children %}
+            <div class="table-responsive">
+                <table class="table sgm-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th class="text-center">¿Asistió?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for child_obj in children %}
+                        <tr>
+                            <td>{{ child_obj.name }}</td>
+                            <td>{{ child_obj.surname }}</td>
+                            <td class="text-center">
+                                <input type="checkbox" name="attended_{{ child_obj.pk }}" id="attended_{{ child_obj.pk }}" class="form-check-input" value="on">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i>Guardar Asistencias
+                </button>
+                <a href="{% url 'pusukids:assistance_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+            {% else %}
+            <div class="alert alert-info mb-0">No hay niños activos en el grupo de edad seleccionado.</div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">
+    Selecciona un grupo de edad y presiona "Cargar Niños" para iniciar la toma de asistencia.
+</div>
+{% endif %}
 {% endblock %}

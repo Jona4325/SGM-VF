@@ -1,12 +1,55 @@
-<!-- c:\Proyectos\pusuqui\iap\pusukids\templates\pusukids\coordinator_form.html -->
 {% extends 'base.html' %}
 
+{% block title %}{{ form_title|default:action|default:"Formulario de Coordinador" }}{% endblock %}
+
 {% block body %}
-    <h1>{{ action }} Coordinador</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">{{ action }}</button>
-        <a href="{% url 'pusukids:coordinator_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="section-header">
+    <div>
+        <h2 class="section-title">
+            <i class="fas fa-user-tie me-2" style="color: var(--forest-700);"></i>{{ form_title|default:action|default:"Formulario de Coordinador" }}
+        </h2>
+        <p class="section-subtitle">Gestiona la información de coordinadores de Pusukids.</p>
+    </div>
+</div>
+
+<div class="card ministry-card mt-3">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="invalid-feedback d-block">{{ form.name.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label for="{{ form.surname.id_for_label }}" class="form-label">{{ form.surname.label }}</label>
+                    {{ form.surname }}
+                    {% if form.surname.errors %}
+                    <div class="invalid-feedback d-block">{{ form.surname.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i>{{ submit_button_text|default:action|default:"Guardar" }}
+                </button>
+                <a href="{% url 'pusukids:coordinator_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i>Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

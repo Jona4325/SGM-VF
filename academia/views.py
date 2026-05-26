@@ -10,6 +10,8 @@ from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Avg, Q
 from django.db import transaction
+from django.db import IntegrityError
+from django.db.models.deletion import ProtectedError
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
 
@@ -41,6 +43,51 @@ class PaginationQueryMixin:
         context = super().get_context_data(**kwargs)
         context['pagination_query'] = self.get_pagination_querystring()
         return context
+
+
+class DuplicateAwareCreateMixin:
+    """
+    Mixin para mostrar mensajes claros cuando un formulario de creación
+    falla por intentar guardar registros duplicados.
+    """
+
+    duplicate_error_message = _("Ya existe un registro con esos datos. No se permiten duplicados.")
+    generic_error_message = _("No se pudo guardar el registro. Revisa los datos ingresados.")
+
+    def form_invalid(self, form):
+        # Consolida errores para detectar indicadores de unicidad/duplicados.
+        all_errors_text = " ".join(
+            str(error)
+            for error_list in form.errors.values()
+            for error in error_list
+        ).lower()
+
+        duplicate_hints = (
+            'already exists',
+            'ya existe',
+            'duplicate',
+            'duplicado',
+            'unique',
+            'constraint',
+            'existe',
+        )
+
+        if any(hint in all_errors_text for hint in duplicate_hints):
+            messages.error(self.request, self.duplicate_error_message)
+        else:
+            messages.error(self.request, self.generic_error_message)
+
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except IntegrityError:
+            # Fallback defensivo: si la validación previa no detectó el duplicado,
+            # evitamos error 500 y devolvemos mensaje claro al usuario.
+            form.add_error(None, self.duplicate_error_message)
+            messages.error(self.request, self.duplicate_error_message)
+            return super().form_invalid(form)
 
 @login_required
 def index(request):
@@ -100,7 +147,7 @@ class TeacherDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context['page_title'] = f"Detalle de Profesor: {self.object.name} {self.object.surname}"
         return context
 
-class TeacherCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class TeacherCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Teacher
     form_class = TeacherForm
     template_name = 'academia/teacher_form.html'
@@ -139,6 +186,29 @@ class TeacherDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context['active_page'] = 'teachers'
         context['page_title'] = f"Eliminar Profesor: {self.object.name} {self.object.surname}"
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        teacher_name = f"{self.object.name} {self.object.surname}"
+
+        try:
+            self.object.delete()
+            messages.success(request, _("El profesor %(teacher_name)s fue eliminado correctamente.") % {
+                'teacher_name': teacher_name,
+            })
+            return redirect(self.success_url)
+        except ProtectedError:
+            messages.error(
+                request,
+                _("No se puede eliminar este profesor porque tiene cursos u otros registros relacionados.")
+            )
+            return redirect(self.success_url)
+        except IntegrityError:
+            messages.error(
+                request,
+                _("No se pudo eliminar el profesor por una restricción de integridad en la base de datos.")
+            )
+            return redirect(self.success_url)
 
 # Vistas para Student
 class StudentListView(PaginationQueryMixin, ListView):
@@ -184,7 +254,7 @@ class StudentDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context['page_title'] = f"Detalle de Estudiante: {self.object.name} {self.object.surname}"
         return context
 
-class StudentCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class StudentCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Student
     form_class = StudentForm
     template_name = 'academia/student_form.html'
@@ -224,6 +294,26 @@ class StudentDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context['page_title'] = f"Eliminar Estudiante: {self.object.name} {self.object.surname}"
         return context
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        student_name = f"{self.object.name} {self.object.surname}"
+        try:
+            self.object.delete()
+            messages.success(request, _("El estudiante %(student_name)s fue eliminado correctamente.") % {
+                'student_name': student_name,
+            })
+        except ProtectedError:
+            messages.error(
+                request,
+                _("No se puede eliminar este estudiante porque tiene registros de asistencia o notas relacionados.")
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                _("No se pudo eliminar el estudiante por una restricción de integridad en la base de datos.")
+            )
+        return redirect(self.success_url)
+
 # Vistas para Subject
 class SubjectListView(PaginationQueryMixin, LoginRequiredMixin, SuperuserRequiredMixin, ListView):
     model = Subject
@@ -248,7 +338,7 @@ class SubjectDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context['page_title'] = f"Detalle de Asignatura: {self.object.name}"
         return context
 
-class SubjectCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class SubjectCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Subject
     form_class = SubjectForm
     template_name = 'academia/subject_form.html'
@@ -287,6 +377,26 @@ class SubjectDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context['active_page'] = 'subjects'
         context['page_title'] = f"Eliminar Asignatura: {self.object.name}"
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        subject_name = self.object.name
+        try:
+            self.object.delete()
+            messages.success(request, _("La asignatura %(subject_name)s fue eliminada correctamente.") % {
+                'subject_name': subject_name,
+            })
+        except ProtectedError:
+            messages.error(
+                request,
+                _("No se puede eliminar esta asignatura porque está asociada a uno o más cursos.")
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                _("No se pudo eliminar la asignatura por una restricción de integridad en la base de datos.")
+            )
+        return redirect(self.success_url)
 
 # Vistas para Course
 class CourseListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
@@ -343,7 +453,7 @@ class CourseDetailView(LoginRequiredMixin,DetailView):
         context['page_title'] = f"Detalle de Curso: {self.object}"
         return context
 
-class CourseCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class CourseCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Course
     form_class = CourseForm
     template_name = 'academia/course_form.html'
@@ -382,6 +492,26 @@ class CourseDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context['active_page'] = 'courses'
         context['page_title'] = f"Eliminar Curso: {self.object}"
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        course_name = str(self.object)
+        try:
+            self.object.delete()
+            messages.success(request, _("El curso %(course_name)s fue eliminado correctamente.") % {
+                'course_name': course_name,
+            })
+        except ProtectedError:
+            messages.error(
+                request,
+                _("No se puede eliminar este curso porque tiene inscripciones, asistencias o notas relacionadas.")
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                _("No se pudo eliminar el curso por una restricción de integridad en la base de datos.")
+            )
+        return redirect(self.success_url)
 
 # Vistas para Enrollment
 class EnrollmentListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
@@ -450,7 +580,7 @@ class EnrollmentDetailView(LoginRequiredMixin,DetailView):
         context['page_title'] = f"Detalle de Inscripción: {self.object.student} - {self.object.course.subject}"
         return context
 
-class EnrollmentCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class EnrollmentCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Enrollment
     form_class = EnrollmentForm
     template_name = 'academia/enrollment_form.html'
@@ -499,6 +629,26 @@ class EnrollmentDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteVie
         context['active_page'] = 'enrollments'
         context['page_title'] = f"Eliminar Inscripción: {self.object.student} - {self.object.course.subject}"
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        enrollment_name = f"{self.object.student} - {self.object.course.subject}"
+        try:
+            self.object.delete()
+            messages.success(request, _("La inscripción %(enrollment_name)s fue eliminada correctamente.") % {
+                'enrollment_name': enrollment_name,
+            })
+        except ProtectedError:
+            messages.error(
+                request,
+                _("No se puede eliminar esta inscripción porque tiene asistencias o notas relacionadas.")
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                _("No se pudo eliminar la inscripción por una restricción de integridad en la base de datos.")
+            )
+        return redirect(self.success_url)
 
 # Vistas para AttendanceLog
 class AttendanceLogListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
@@ -582,7 +732,7 @@ class AttendanceLogDetailView(LoginRequiredMixin,DetailView):
         context['page_title'] = f"Detalle de Asistencia: {self.object.enrollment.student} - L{self.object.lesson_number}"
         return context
 
-class AttendanceLogCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class AttendanceLogCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = AttendanceLog
     form_class = AttendanceLogForm
     template_name = 'academia/attendancelog_form.html'
@@ -961,7 +1111,7 @@ class GradeDetailView(LoginRequiredMixin,DetailView):
         context['page_title'] = _('Grade Detail')
         return context
 
-class GradeCreateView(LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
+class GradeCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRequiredMixin, CreateView):
     model = Grade
     form_class = GradeForm
     template_name = 'academia/grade_form.html'
@@ -1020,6 +1170,23 @@ class GradeDeleteView(LoginRequiredMixin, DeleteView):
         context['active_page'] = 'grades'
         context['page_title'] = _('Delete Grade')
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            self.object.delete()
+            messages.success(request, _('La nota fue eliminada correctamente.'))
+        except ProtectedError:
+            messages.error(
+                request,
+                _('No se puede eliminar esta nota porque tiene registros relacionados.')
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                _('No se pudo eliminar la nota por una restricción de integridad en la base de datos.')
+            )
+        return redirect(self.success_url)
 
 class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
     template_name = 'academia/close_period_form.html'

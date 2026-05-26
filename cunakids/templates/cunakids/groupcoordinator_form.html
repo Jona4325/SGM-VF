@@ -34,7 +34,7 @@
         </div>
     {% endif %}
 
-    <button type="submit" class="btn btn-success">{{ action }}</button>
+    <button type="submit" class="btn btn-success">{{ submit_button_text|default:action|default:"Guardar" }}</button>
     <a href="{% url 'cunakids:groupcoordinator_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}

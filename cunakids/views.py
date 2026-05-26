@@ -4,6 +4,7 @@ from .models import (
     coordinator, group, server, child, assistance, GroupCoordinator,
 )
 from django.db import IntegrityError
+from django.db.models.deletion import ProtectedError
 from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -46,7 +47,7 @@ def paginate_queryset(request, queryset, per_page=10):
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
-@login_required
+
 def calculated_age(born):
     if not born: return None
     today = date.today()
@@ -92,10 +93,16 @@ def coordinator_create(request):
         form = CoordinatorForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Coordinador registrado exitosamente.')
             return redirect('cunakids:coordinator_list')
     else:
         form = CoordinatorForm()
-    return render(request, 'cunakids/coordinator_form.html', {'form': form, 'action': 'Crear'})
+    return render(request, 'cunakids/coordinator_form.html', {
+        'form': form,
+        'action': 'Crear',
+        'form_title': 'Registrar Coordinador',
+        'submit_button_text': 'Guardar',
+    })
 
 @login_required
 def coordinator_update(request, pk):
@@ -107,10 +114,16 @@ def coordinator_update(request, pk):
         form = CoordinatorForm(request.POST, instance=coordinator_obj)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Coordinador actualizado exitosamente.')
             return redirect('cunakids:coordinator_list')
     else:
         form = CoordinatorForm(instance=coordinator_obj)
-    return render(request, 'cunakids/coordinator_form.html', {'form': form, 'action': 'Actualizar'})
+    return render(request, 'cunakids/coordinator_form.html', {
+        'form': form,
+        'action': 'Actualizar',
+        'form_title': f'Editar Coordinador: {coordinator_obj.name} {coordinator_obj.surname}',
+        'submit_button_text': 'Actualizar',
+    })
 
 @login_required
 def coordinator_delete(request, pk):
@@ -119,8 +132,17 @@ def coordinator_delete(request, pk):
     """
     coordinator_obj = get_object_or_404(coordinator, pk=pk)
     if request.method == 'POST':
-        coordinator_obj.delete()
-        return redirect('cunakids:coordinator_list')
+        try:
+            coordinator_obj.delete()
+            messages.success(request, 'Coordinador eliminado exitosamente.')
+            return redirect('cunakids:coordinator_list')
+        except ProtectedError:
+            messages.error(
+                request,
+                'No se puede eliminar este coordinador porque tiene registros relacionados '
+                '(asistencias o servidores). Elimina primero esas relaciones.'
+            )
+            return redirect('cunakids:coordinator_list')
     return render(request, 'cunakids/coordinator_confirm_delete.html', {'coordinator': coordinator_obj})
 
 # vista para crear groups
@@ -140,10 +162,15 @@ def group_create(request):
         form = GroupForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Grupo registrado exitosamente.')
             return redirect('cunakids:group_list')
     else:
         form = GroupForm()
-    return render(request, 'cunakids/group_form.html', {'form': form})
+    return render(request, 'cunakids/group_form.html', {
+        'form': form,
+        'form_title': 'Registrar Nuevo Grupo',
+        'submit_button_text': 'Guardar',
+    })
 
 @login_required
 def group_update(request, pk):
@@ -152,10 +179,15 @@ def group_update(request, pk):
         form = GroupForm(request.POST, instance=group_obj)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Grupo actualizado exitosamente.')
             return redirect('cunakids:group_list')
     else:
         form = GroupForm(instance=group_obj)
-    return render(request, 'cunakids/group_form.html', {'form': form})
+    return render(request, 'cunakids/group_form.html', {
+        'form': form,
+        'form_title': f'Editar Grupo: {group_obj.name}',
+        'submit_button_text': 'Actualizar',
+    })
 
 @login_required
 def group_delete(request, pk):
@@ -208,6 +240,23 @@ class ServerDeleteView(LoginRequiredMixin,DeleteView):
     context_object_name = 'server'
     success_url = reverse_lazy('cunakids:server_list') # Redirige a la lista después de borrar
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            self.object.delete()
+            messages.success(request, 'Servidor eliminado exitosamente.')
+        except ProtectedError:
+            messages.error(
+                request,
+                'No se puede eliminar este servidor porque tiene registros relacionados protegidos.'
+            )
+        except IntegrityError:
+            messages.error(
+                request,
+                'No se pudo eliminar el servidor por una restricción de integridad en la base de datos.'
+            )
+        return redirect(self.success_url)
+
 # --- Vistas para el CRUD de Kid ---
 @login_required
 def child_list(request):
@@ -230,11 +279,17 @@ def child_create(request): # <-- Renombrada
         form = ChildForm(request.POST) # <-- Cambiado
         if form.is_valid():
             form.save()
+            messages.success(request, 'Niño registrado exitosamente.')
             return redirect('cunakids:child_list') # <-- Cambiado
     else:
         form = ChildForm() # <-- Cambiado
     # Asegúrate que el template existe o renómbralo
-    return render(request, 'cunakids/child_form.html', {'form': form, 'action': 'Registrar'}) # <-- Cambiado template
+    return render(request, 'cunakids/child_form.html', {
+        'form': form,
+        'action': 'Registrar',
+        'form_title': 'Registrar Niño',
+        'submit_button_text': 'Guardar',
+    }) # <-- Cambiado template
 
 @login_required
 def child_update(request, pk): # <-- Renombrada
@@ -244,13 +299,20 @@ def child_update(request, pk): # <-- Renombrada
         form = ChildForm(request.POST, instance=child_obj) # <-- Cambiado
         if form.is_valid():
             form.save()
+            messages.success(request, 'Registro del niño actualizado exitosamente.')
             return redirect('cunakids:child_list') # <-- Cambiado
     else:
         form = ChildForm(instance=child_obj) # <-- Cambiado
     current_age = calculated_age(child_obj.birthday) if child_obj.birthday else "N/A"
     action_title = f"Editar Niño: {child_obj.name} {child_obj.surname} (Edad: {current_age})"
     # Asegúrate que el template existe o renómbralo
-    return render(request, 'cunakids/child_form.html', {'form': form, 'action': 'Actualizar', 'action_title': action_title}) # <-- Cambiado template
+    return render(request, 'cunakids/child_form.html', {
+        'form': form,
+        'action': 'Actualizar',
+        'action_title': action_title,
+        'form_title': action_title,
+        'submit_button_text': 'Actualizar',
+    }) # <-- Cambiado template
 
 @login_required
 def child_delete(request, pk): # <-- Renombrada
@@ -354,7 +416,8 @@ def assistance_update(request, pk):
     return render(request, 'cunakids/assistance_form.html', {
         'form': form,
         'action': 'Actualizar',
-        'action_title': action_title
+        'action_title': action_title,
+        'submit_button_text': 'Actualizar',
     })
 
 @login_required
@@ -401,7 +464,12 @@ def groupcoordinator_create(request):
                 messages.error(request, 'Error: Esta asignación de grupo y coordinador ya existe.')
     else:
         form = GroupCoordinatorForm()
-    return render(request, 'cunakids/groupcoordinator_form.html', {'form': form, 'action': 'Asignar'})
+    return render(request, 'cunakids/groupcoordinator_form.html', {
+        'form': form,
+        'action': 'Asignar',
+        'action_title': 'Asignar Coordinador a Grupo',
+        'submit_button_text': 'Guardar',
+    })
 
 @login_required
 def groupcoordinator_update(request, pk):
@@ -423,7 +491,8 @@ def groupcoordinator_update(request, pk):
     return render(request, 'cunakids/groupcoordinator_form.html', {
         'form': form, 
         'action': 'Actualizar', 
-        'action_title': action_title
+        'action_title': action_title,
+        'submit_button_text': 'Actualizar',
     })
 
 @login_required

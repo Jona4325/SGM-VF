@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes — Pusukids{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>Reportes Pusukids
+    </h2>
+    <p class="section-subtitle">Selecciona el reporte que deseas consultar.</p>
+  </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <div class="col">
+    <div class="card h-100 ministry-card">
+      <div class="card-body d-flex flex-column">
+        <div class="module-icon"><i class="fas fa-chart-bar"></i></div>
+        <h5 class="card-title">Asistencia por Grupo de Edad</h5>
+        <p class="card-text">Muestra las asistencias de niños agrupadas por grupo de edad.</p>
+        <a href="{% url 'pusukids:attendance_report_groupage' %}" class="btn btn-primary mt-auto w-100">
+          Ver Reporte
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 ministry-card">
+      <div class="card-body d-flex flex-column">
+        <div class="module-icon"><i class="fas fa-table"></i></div>
+        <h5 class="card-title">Asistencia Mensual de Niños</h5>
+        <p class="card-text">Reporte tipo pivote con niños en filas y meses en columnas.</p>
+        <a href="{% url 'pusukids:attendance_report_children_monthly_pivot' %}" class="btn btn-primary mt-auto w-100">
+          Ver Reporte
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-4">
+  <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver
+  </a>
+</div>
+{% endblock %}

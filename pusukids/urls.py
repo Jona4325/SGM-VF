@@ -6,6 +6,11 @@ app_name = 'pusukids'  # Namespace para las URLs de esta aplicación
 urlpatterns = [
     path('', views.index, name='index'),  # URL para la página principal de pusukids
 
+    # --- URLs para Reportes ---
+    path('reports/', views.reports_menu, name='reports_menu'),
+    path('reports/attendance-by-groupage/', views.attendance_report_groupage, name='attendance_report_groupage'),
+    path('reports/children-monthly-pivot/', views.attendance_report_children_monthly_pivot, name='attendance_report_children_monthly_pivot'),
+
     # URLs para el CRUD de Coordinator
     path('coordinators/', views.coordinator_list, name='coordinator_list'),
     path('coordinators/new/', views.coordinator_create, name='coordinator_create'),

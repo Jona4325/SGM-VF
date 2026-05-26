@@ -188,6 +188,11 @@ class BatchAssistanceForm(forms.Form):
         label="Coordinador(a)",
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+    groupage = forms.ModelChoiceField(
+        queryset=groupage.objects.all().order_by('name'),
+        label="Grupo de Edad",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -196,6 +201,9 @@ class BatchAssistanceForm(forms.Form):
             date__year=today.year,
             date__month=today.month
         ).order_by('-date')
+        self.fields['group'].queryset = group.objects.order_by('name')
+        self.fields['coordinator'].queryset = coordinator.objects.order_by('surname', 'name')
+        self.fields['groupage'].queryset = groupage.objects.order_by('name')
 
 class FechaForm(forms.ModelForm):
     class Meta:

@@ -20,6 +20,25 @@ class TeacherForm(forms.ModelForm):
             'phone_number': 'Número de Teléfono',
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        name = (cleaned_data.get('name') or '').strip()
+        surname = (cleaned_data.get('surname') or '').strip()
+        email = (cleaned_data.get('email') or '').strip()
+
+        # El manager de TenantAwareModel ya filtra por tenant activo.
+        duplicate_teacher_qs = Teacher.objects.all()
+        if self.instance.pk:
+            duplicate_teacher_qs = duplicate_teacher_qs.exclude(pk=self.instance.pk)
+
+        if name and surname and duplicate_teacher_qs.filter(name__iexact=name, surname__iexact=surname).exists():
+            self.add_error(None, 'Ya existe un profesor con el mismo nombre y apellido.')
+
+        if email and duplicate_teacher_qs.filter(email__iexact=email).exists():
+            self.add_error('email', 'Ya existe un profesor con este correo electrónico.')
+
+        return cleaned_data
+
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
@@ -38,6 +57,25 @@ class StudentForm(forms.ModelForm):
             'phone_number': 'Número de Teléfono',
             'date_of_birth': 'Fecha de Nacimiento',
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = (cleaned_data.get('name') or '').strip()
+        surname = (cleaned_data.get('surname') or '').strip()
+        email = (cleaned_data.get('email') or '').strip()
+
+        # El manager de TenantAwareModel filtra por tenant activo.
+        duplicate_student_qs = Student.objects.all()
+        if self.instance.pk:
+            duplicate_student_qs = duplicate_student_qs.exclude(pk=self.instance.pk)
+
+        if name and surname and duplicate_student_qs.filter(name__iexact=name, surname__iexact=surname).exists():
+            self.add_error(None, 'Ya existe un estudiante con el mismo nombre y apellido.')
+
+        if email and duplicate_student_qs.filter(email__iexact=email).exists():
+            self.add_error('email', 'Ya existe un estudiante con este correo electrónico.')
+
+        return cleaned_data
 
 class SubjectForm(forms.ModelForm):
     class Meta:

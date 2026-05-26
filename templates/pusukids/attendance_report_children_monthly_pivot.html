@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Asistencia Mensual de Niños — Pusukids{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-table me-2" style="color: var(--forest-700);"></i>Asistencia Mensual de Niños
+    </h2>
+    <p class="section-subtitle">Vista pivote con niños en filas y meses en columnas.</p>
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-2"></i>Filtros</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Año</label>
+        <select name="year" class="form-select">
+          {% for y in available_years %}
+          <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-4 col-md-6">
+        <label class="form-label">Grupo de Edad</label>
+        <select name="groupage" class="form-select">
+          <option value="">Todos</option>
+          {% for ga in groupage_options %}
+          <option value="{{ ga.pk }}" {% if selected_groupage_id == ga.pk %}selected{% endif %}>{{ ga.name }} - {{ ga.description }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Filtrar</button>
+      </div>
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <a href="{% url 'pusukids:attendance_report_children_monthly_pivot' %}" class="btn btn-outline-secondary w-100">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="sgm-form-card">
+  <div class="card-header"><i class="fas fa-th me-2"></i>Matriz de Asistencia</div>
+  <div class="card-body">
+    {% if pivot_rows %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Niño</th>
+            <th>Grupo Edad</th>
+            {% for month_num, month_name in months %}
+            <th class="text-end">{{ month_name }}</th>
+            {% endfor %}
+            <th class="text-end">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in pivot_rows %}
+          <tr>
+            <td>{{ row.child.surname }}, {{ row.child.name }}</td>
+            <td>{{ row.child.groupage.name }}</td>
+            {% for value in row.months %}
+            <td class="text-end">{{ value }}</td>
+            {% endfor %}
+            <td class="text-end fw-semibold">{{ row.row_total }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th colspan="2">Total por mes</th>
+            {% for total in month_totals %}
+            <th class="text-end">{{ total }}</th>
+            {% endfor %}
+            <th class="text-end">{{ grand_total }}</th>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay niños o asistencias para los filtros seleccionados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+  <a href="{% url 'pusukids:reports_menu' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver a Reportes
+  </a>
+  <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">Volver al Inicio de Pusukids</a>
+</div>
+{% endblock %}
