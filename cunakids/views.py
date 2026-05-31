@@ -337,15 +337,25 @@ def child_delete(request, pk): # <-- Renombrada
 @login_required
 def assistance_list(request):
     """Vista para listar todos los registros de asistencia."""
+    search_surname = request.GET.get('surname', '').strip()
+    search_date = request.GET.get('date', '').strip()
+
     # Optimizar consulta usando select_related para cargar datos relacionados
     assistances_list = assistance.objects.select_related(
         'child', 'group', 'coordinator'  # 'date' no es una relación
-    ).order_by('-date', 'child__surname', 'child__name') # Ordenar por fecha desc, luego por niño
+    ).order_by('-date', '-child__surname', '-child__name') # Ordenar en descendente por fecha y niño
+
+    if search_surname:
+        assistances_list = assistances_list.filter(child__surname__icontains=search_surname)
+    if search_date:
+        assistances_list = assistances_list.filter(date=search_date)
 
     page_obj = paginate_queryset(request, assistances_list, per_page=15)
     return render(request, 'cunakids/assistance_list.html', {
         'assistances': page_obj,
         'page_obj': page_obj,
+        'search_surname': search_surname,
+        'search_date': search_date,
         'pagination_query': get_pagination_query(request),
     })
 

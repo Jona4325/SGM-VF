@@ -11,8 +11,33 @@
     <p class="section-subtitle">Registros de asistencia de niños en Cunakids.</p>
   </div>
   <a href="{% url 'cunakids:assistance_create' %}" class="btn btn-primary">
-    <i class="fas fa-plus me-1"></i>Registrar Nueva Asistencia
+    <i class="fas fa-plus me-1"></i>Registrar Asistencia Grupal
   </a>
+</div>
+
+<div class="sgm-form-card card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-2"></i>Buscar y Filtrar</div>
+  <div class="card-body">
+    <form method="get" action="{% url 'cunakids:assistance_list' %}">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <label for="surname" class="form-label">Buscar por Apellido</label>
+          <input type="text" name="surname" id="surname" class="form-control"
+                 value="{{ search_surname|default:'' }}" placeholder="Ej: Perez">
+        </div>
+        <div class="col-md-5">
+          <label for="date" class="form-label">Filtrar por Fecha</label>
+          <input type="date" name="date" id="date" class="form-control"
+                 value="{{ search_date|default:'' }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search me-1"></i>Buscar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
 {% if page_obj and page_obj.paginator.count %}
@@ -32,9 +57,9 @@
       {% for a in assistances %}
       <tr>
         <td>{{ a.date|date:"d/m/Y" }}</td>
-        <td>{{ a.child.name }} {{ a.child.surname }}</td>
+        <td>{{ a.child.surname }}, {{ a.child.name }}</td>
         <td>{{ a.group.name }}</td>
-        <td>{{ a.coordinator.name }} {{ a.coordinator.surname }}</td>
+        <td>{{ a.coordinator.name }}</td>
         <td>
           {% if a.attended %}
             <span class="badge bg-success">Sí</span>

@@ -515,7 +515,7 @@ def assistance_list(request):
     # Optimizar consulta usando select_related para cargar datos relacionados
     assistances_list = assistance.objects.select_related(
         'child', 'date', 'group', 'coordinator'
-    ).order_by('-date__date', 'child__surname', 'child__name') # Ordenar por fecha desc, luego por niño
+    ).order_by('-date__date', '-child__surname', '-child__name') # Ordenar en descendente por fecha y niño
 
     # Aplicar filtros si existen
     if search_surname:
