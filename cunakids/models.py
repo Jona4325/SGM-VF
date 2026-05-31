@@ -74,7 +74,7 @@ class child(TenantAwareModel):
     )
 
     class Meta:
-        unique_together = [('tenant', 'name')]
+        unique_together = [('tenant', 'name', 'surname', 'birthday')]
 
     @property
     def calculated_age(self):
