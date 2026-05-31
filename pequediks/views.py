@@ -15,6 +15,7 @@ from .forms import (
 )
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models.functions import Lower, Trim
 import traceback # Para debug si es necesario
 
 # Create your views here.
@@ -46,6 +47,15 @@ def paginate_queryset(request, queryset, per_page=10):
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
+
+
+def get_active_children_queryset():
+    """Normaliza el estado para soportar datos heredados (ej. Activo/ ACTIVO )."""
+    return child.objects.annotate(
+        status_normalized=Lower(Trim('status'))
+    ).filter(status_normalized='activo')
+
+
 @login_required
 def calculated_age(born):
     if not born: return None
@@ -285,7 +295,7 @@ def assistance_create(request):
     Vista para crear registros de asistencia en lote para todos los niños ACTIVOS.
     """
     # Filtrar para incluir solo niños con estado 'activo'
-    children_list = child.objects.filter(status='activo').order_by('surname', 'name')
+    children_list = get_active_children_queryset().order_by('surname', 'name')
 
     if request.method == 'POST':
         form = BatchAssistanceForm(request.POST)
@@ -300,6 +310,7 @@ def assistance_create(request):
                 attended = request.POST.get(f'attended_{child_obj.pk}') == 'on'
                 assistances_to_create.append(
                     assistance(
+                        tenant=child_obj.tenant,
                         child=child_obj,
                         date=date_obj,
                         group=group_obj,

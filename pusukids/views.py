@@ -20,6 +20,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import ProtectedError, Q, Count
+from django.db.models.functions import Lower, Trim
 import traceback # Para debug si es necesario
 
 # Create your views here.
@@ -51,6 +52,13 @@ def paginate_queryset(request, queryset, per_page=10):
     paginator = Paginator(queryset, per_page)
     page_number = request.GET.get('page')
     return paginator.get_page(page_number)
+
+
+def get_active_children_queryset():
+    """Normaliza el estado para soportar datos heredados (ej. Activo/ ACTIVO )."""
+    return child.objects.annotate(
+        status_normalized=Lower(Trim('status'))
+    ).filter(status_normalized=child.STATUS_ACTIVO)
 
 def calculated_age(born):
     if not born: return None
@@ -550,8 +558,7 @@ def assistance_create(request):
             coordinator_obj = form.cleaned_data['coordinator']
             selected_groupage = form.cleaned_data['groupage']
 
-            children_list = child.objects.filter(
-                status=child.STATUS_ACTIVO,
+            children_list = get_active_children_queryset().filter(
                 groupage=selected_groupage,
             ).order_by('surname', 'name')
 
@@ -571,6 +578,7 @@ def assistance_create(request):
                 attended = request.POST.get(f'attended_{child_obj.pk}') == 'on'
                 assistances_to_create.append(
                     assistance(
+                        tenant=child_obj.tenant,
                         child=child_obj,
                         date=date_obj,
                         group=group_obj,
@@ -593,16 +601,14 @@ def assistance_create(request):
             if posted_groupage_id and posted_groupage_id.isdigit():
                 selected_groupage = groupage.objects.filter(pk=posted_groupage_id).first()
                 if selected_groupage:
-                    children_list = child.objects.filter(
-                        status=child.STATUS_ACTIVO,
+                    children_list = get_active_children_queryset().filter(
                         groupage=selected_groupage,
                     ).order_by('surname', 'name')
     else:
         if selected_groupage_id and selected_groupage_id.isdigit():
             selected_groupage = groupage.objects.filter(pk=selected_groupage_id).first()
             if selected_groupage:
-                children_list = child.objects.filter(
-                    status=child.STATUS_ACTIVO,
+                children_list = get_active_children_queryset().filter(
                     groupage=selected_groupage,
                 ).order_by('surname', 'name')
                 form = BatchAssistanceForm(initial={'groupage': selected_groupage.pk})
