@@ -588,12 +588,27 @@ def assistance_create(request):
                 )
             
             if assistances_to_create:
-                try:
-                    assistance.objects.bulk_create(assistances_to_create)
-                    messages.success(request, 'Asistencias registradas exitosamente.')
+                # Excluir niños que ya tienen registro en esa fecha
+                existing_child_ids = set(
+                    assistance.objects.filter(date=date_obj).values_list('child_id', flat=True)
+                )
+                new_records = [a for a in assistances_to_create if a.child_id not in existing_child_ids]
+                skipped = [a for a in assistances_to_create if a.child_id in existing_child_ids]
+
+                if skipped:
+                    skipped_names = ', '.join(f"{a.child.name} {a.child.surname}" for a in skipped)
+                    messages.warning(request, f'Los siguientes niños ya tenían asistencia registrada en esa fecha y fueron omitidos: {skipped_names}')
+
+                if new_records:
+                    try:
+                        assistance.objects.bulk_create(new_records)
+                        messages.success(request, f'{len(new_records)} asistencia(s) registrada(s) exitosamente.')
+                        return redirect('pusukids:assistance_list')
+                    except IntegrityError:
+                        messages.error(request, 'Error inesperado al guardar. Por favor intenta de nuevo.')
+                elif skipped:
+                    # Todos ya existían, redirigir igual
                     return redirect('pusukids:assistance_list')
-                except IntegrityError:
-                    messages.error(request, 'Error: No se pudo registrar la asistencia. Es probable que ya existan registros para uno o más niños en la fecha seleccionada.')
             else:
                 messages.warning(request, 'No hay niños disponibles para registrar asistencia con ese filtro.')
         else:
@@ -634,9 +649,12 @@ def assistance_update(request, pk):
     if request.method == 'POST':
         form = AssistanceForm(request.POST, instance=assistance_obj)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Registro de asistencia actualizado exitosamente.')
-            return redirect('pusukids:assistance_list')
+            try:
+                form.save()
+                messages.success(request, 'Registro de asistencia actualizado exitosamente.')
+                return redirect('pusukids:assistance_list')
+            except IntegrityError:
+                messages.error(request, 'Ya existe un registro de asistencia para ese niño en esa fecha.')
         else:
             messages.error(request, 'Por favor corrige los errores del formulario.')
     else:

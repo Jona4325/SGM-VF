@@ -328,21 +328,25 @@ def assistance_create(request):
                         attended=attended
                     )
                 )
-            try:
-                if assistances_to_create:
-                    # ignore_conflicts=True podría ser una opción, pero es mejor notificar el error.
-                    assistance.objects.bulk_create(assistances_to_create)
-                messages.success(request, 'Asistencias registradas exitosamente.')
+            existing_child_ids = set(
+                assistance.objects.filter(date=date_obj).values_list('child_id', flat=True)
+            )
+            new_records = [a for a in assistances_to_create if a.child_id not in existing_child_ids]
+            skipped = [a for a in assistances_to_create if a.child_id in existing_child_ids]
+
+            if skipped:
+                skipped_names = ', '.join(f"{a.child.name} {a.child.surname}" for a in skipped)
+                messages.warning(request, f'Los siguientes niños ya tenían asistencia registrada en esa fecha y fueron omitidos: {skipped_names}')
+
+            if new_records:
+                try:
+                    assistance.objects.bulk_create(new_records)
+                    messages.success(request, f'{len(new_records)} asistencia(s) registrada(s) exitosamente.')
+                    return redirect('pequediks:assistance_list')
+                except IntegrityError:
+                    messages.error(request, 'Error inesperado al guardar. Por favor intenta de nuevo.')
+            elif skipped:
                 return redirect('pequediks:assistance_list')
-            except IntegrityError:
-                # Esto ocurre si se intenta registrar una asistencia para un niño en una fecha que ya existe.
-                messages.error(request, 'Error: Ya existe un registro de asistencia para uno o más niños en la fecha seleccionada. No se guardó ningún registro.')
-                # Volvemos a renderizar el formulario con los datos que el usuario ya había llenado
-                return render(request, 'pequediks/assistance_batch_form.html', {
-                    'form': form,
-                    'children': children_list,
-                    'action_title': 'Registrar Asistencia Grupal'
-                })
     else:
         form = BatchAssistanceForm()
 
@@ -359,9 +363,12 @@ def assistance_update(request, pk):
     if request.method == 'POST':
         form = AssistanceForm(request.POST, instance=assistance_obj)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Registro de asistencia actualizado.')
-            return redirect('pequediks:assistance_list')
+            try:
+                form.save()
+                messages.success(request, 'Registro de asistencia actualizado.')
+                return redirect('pequediks:assistance_list')
+            except IntegrityError:
+                messages.error(request, 'Ya existe un registro de asistencia para ese niño en esa fecha.')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
     else:
