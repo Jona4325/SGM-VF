@@ -22,6 +22,37 @@
     {% endif %}
 </div>
 
+<div class="card mb-4" style="border-radius: var(--radius-md); border: 1px solid rgba(31,91,77,0.15);">
+    <div class="card-body">
+        <h6 class="fw-semibold mb-3" style="color: var(--forest-700);">{% translate "Filter Grades" %}</h6>
+        <form method="get" action="">
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <label for="course" class="form-label">{% translate "Course" %}</label>
+                    <select name="course" id="course" class="form-select">
+                        <option value="">-- {% translate "All Courses" %} --</option>
+                        {% for c in all_courses %}
+                            <option value="{{ c.id }}" {% if c.id|stringformat:"s" == current_course %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="student" class="form-label">{% translate "Student" %}</label>
+                    <select name="student" id="student" class="form-select">
+                        <option value="">-- {% translate "All Students" %} --</option>
+                        {% for s in all_students %}
+                            <option value="{{ s.id }}" {% if s.id|stringformat:"s" == current_student %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>{% translate "Filter" %}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% if grades %}
     <div class="table-responsive">
         <table class="table sgm-table">

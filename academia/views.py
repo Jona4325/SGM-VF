@@ -774,7 +774,7 @@ class AttendanceLogUpdateView(LoginRequiredMixin, UpdateView):
         context['submit_button_text'] = 'Actualizar Registro'
         return context
 
-class AttendanceLogDeleteView(LoginRequiredMixin, UpdateView):
+class AttendanceLogDeleteView(LoginRequiredMixin, DeleteView):
     model = AttendanceLog
     template_name = 'academia/attendancelog_confirm_delete.html'
     success_url = reverse_lazy('academia:attendancelog-list')
@@ -794,6 +794,10 @@ class AttendanceLogDeleteView(LoginRequiredMixin, UpdateView):
         context['active_page'] = 'attendancelogs'
         context['page_title'] = f"Eliminar Registro de Asistencia: {self.object.enrollment.student} - L{self.object.lesson_number}"
         return context
+
+    def form_valid(self, form):
+        messages.success(self.request, _('Registro de asistencia eliminado correctamente.'))
+        return super().form_valid(form)
 
 class TakeAttendanceView(LoginRequiredMixin,View):
     template_name = 'academia/take_attendance_form.html'
@@ -1076,16 +1080,50 @@ class GradeListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
-            return Grade.objects.select_related('enrollment__student', 'enrollment__course').order_by('enrollment__student__surname', 'enrollment__course__subject__name', 'lesson_number')
-        
-        try:
-            return Grade.objects.filter(enrollment__course__teacher=user.teacher).select_related('enrollment__student', 'enrollment__course').order_by('enrollment__student__surname', 'enrollment__course__subject__name', 'lesson_number')
-        except Teacher.DoesNotExist:
-            return Grade.objects.none()
+        queryset = Grade.objects.select_related(
+            'enrollment__student',
+            'enrollment__course__subject',
+        )
+
+        if not user.is_superuser:
+            try:
+                queryset = queryset.filter(enrollment__course__teacher=user.teacher)
+            except Teacher.DoesNotExist:
+                return Grade.objects.none()
+
+        current_course = self.request.GET.get('course')
+        current_student = self.request.GET.get('student')
+
+        if current_course:
+            queryset = queryset.filter(enrollment__course_id=current_course)
+        if current_student:
+            queryset = queryset.filter(enrollment__student_id=current_student)
+
+        return queryset.order_by(
+            'enrollment__student__surname',
+            'enrollment__course__subject__name',
+            'lesson_number',
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = self.request.user
+        base_queryset = Grade.objects.select_related('enrollment__student', 'enrollment__course__subject')
+
+        if not user.is_superuser:
+            try:
+                base_queryset = base_queryset.filter(enrollment__course__teacher=user.teacher)
+            except Teacher.DoesNotExist:
+                base_queryset = Grade.objects.none()
+
+        context['all_courses'] = Course.objects.filter(
+            enrollments__grades__in=base_queryset
+        ).distinct().order_by('subject__name', '-academic_period')
+        context['all_students'] = Student.objects.filter(
+            enrollments__grades__in=base_queryset
+        ).distinct().order_by('surname', 'name')
+        context['current_course'] = self.request.GET.get('course', '')
+        context['current_student'] = self.request.GET.get('student', '')
         context['active_page'] = 'grades'
         context['page_title'] = _('List of Grades')
         return context
