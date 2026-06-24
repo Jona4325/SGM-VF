@@ -692,6 +692,7 @@ class AttendanceLogListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['active_page'] = 'attendancelogs'
         context['page_title'] = 'Listado de Registros de Asistencia'
+        context['can_take_bulk_attendance'] = self.request.user.is_superuser or hasattr(self.request.user, 'teacher')
 
         # Filtra los cursos disponibles en el dropdown de filtros
         user = self.request.user
@@ -1109,6 +1110,7 @@ class GradeListView(PaginationQueryMixin, LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         base_queryset = Grade.objects.select_related('enrollment__student', 'enrollment__course__subject')
+        context['can_take_bulk_grades'] = user.is_superuser or hasattr(user, 'teacher')
 
         if not user.is_superuser:
             try:
