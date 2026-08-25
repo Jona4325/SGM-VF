@@ -165,6 +165,15 @@ class EnrollmentForm(forms.ModelForm):
             # El widget DateInput(type='date') puede manejar un objeto date directamente.
             self.fields['enrollment_date'].widget.attrs.setdefault('value', actual_default_value.strftime('%Y-%m-%d'))
 
+    def clean(self):
+        cleaned_data = super().clean()
+        course = cleaned_data.get('course')
+
+        if course and course.is_closed:
+            self.add_error('course', _('No se pueden modificar inscripciones de un curso cerrado.'))
+
+        return cleaned_data
+
 class AttendanceLogForm(forms.ModelForm):
     class Meta:
         model = AttendanceLog
@@ -192,11 +201,21 @@ class AttendanceLogForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtrar inscripciones solo de cursos activos
         self.fields['enrollment'].queryset = Enrollment.objects.filter(
-            course__is_active=True
+            course__is_active=True,
+            course__is_closed=False,
         ).select_related('student', 'course__subject').order_by('course__subject__name', 'student__surname')
         # Establecer la fecha de hoy como valor por defecto para lesson_date si es un formulario nuevo
         if not self.instance.pk and 'initial' not in kwargs: # Solo para creación y si no se provee initial
              self.fields['lesson_date'].widget.attrs.setdefault('value', AttendanceLog._meta.get_field('lesson_date').validators[0].__self__.today().strftime('%Y-%m-%d') if hasattr(AttendanceLog._meta.get_field('lesson_date').validators[0], '__self__') and hasattr(AttendanceLog._meta.get_field('lesson_date').validators[0].__self__, 'today') else date.today().strftime('%Y-%m-%d'))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        enrollment = cleaned_data.get('enrollment')
+
+        if enrollment and enrollment.course.is_closed:
+            self.add_error('enrollment', _('No se pueden modificar asistencias de un curso cerrado.'))
+
+        return cleaned_data
 
     def clean_lesson_number(self):
         lesson_number = self.cleaned_data.get('lesson_number')
@@ -208,7 +227,7 @@ class AttendanceLogForm(forms.ModelForm):
 
 class AttendanceTakingSelectionForm(forms.Form):
     course = forms.ModelChoiceField(
-        queryset=Course.objects.filter(is_active=True).select_related('subject').order_by('-academic_period', 'subject__name'),
+        queryset=Course.objects.filter(is_active=True, is_closed=False).select_related('subject').order_by('-academic_period', 'subject__name'),
         label=_("Course"),
         widget=forms.Select(attrs={'class': 'form-control select2'})
     )
@@ -246,7 +265,7 @@ class StudentAttendanceForm(forms.Form):
 
 class GradeTakingSelectionForm(forms.Form):
     course = forms.ModelChoiceField(
-        queryset=Course.objects.select_related('subject').order_by('-academic_period', 'subject__name'),
+        queryset=Course.objects.filter(is_closed=False).select_related('subject').order_by('-academic_period', 'subject__name'),
         label=_("Course"),
         widget=forms.Select(attrs={'class': 'form-control select2'})
     )
@@ -306,6 +325,15 @@ class GradeForm(forms.ModelForm):
             'grade': _('Grade'),
             'grade_type': _('Grade Type'),
         }    
+
+    def clean(self):
+        cleaned_data = super().clean()
+        enrollment = cleaned_data.get('enrollment')
+
+        if enrollment and enrollment.course.is_closed:
+            self.add_error('enrollment', _('No se pueden modificar notas de un curso cerrado.'))
+
+        return cleaned_data
 
 class ClosePeriodForm(forms.Form):
     course = forms.ModelChoiceField(

@@ -34,8 +34,8 @@ class AttendanceLogInline(admin.TabularInline): # O admin.StackedInline
  
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'teacher', 'academic_period', 'day_of_week', 'start_time', 'start_date', 'end_date', 'is_active')
-    list_filter = ('academic_period', 'day_of_week', 'teacher', 'subject', 'is_active')
+    list_display = ('subject', 'teacher', 'academic_period', 'day_of_week', 'start_time', 'start_date', 'end_date', 'is_active', 'is_closed')
+    list_filter = ('academic_period', 'day_of_week', 'teacher', 'subject', 'is_active', 'is_closed')
     search_fields = ('subject__name', 'teacher__name', 'teacher__surname', 'academic_period')
     ordering = ('-academic_period', 'subject__name', 'start_date')
     raw_id_fields = ('teacher', 'subject') # Útil si tienes muchos profesores o materias

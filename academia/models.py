@@ -135,6 +135,11 @@ class Course(TenantAwareModel):
         help_text=_("Calculated automatically if not provided, based on start date and number of lessons.")
     )
     is_active = models.BooleanField(_("is active"), default=True, help_text=_("Is this course currently active?"))
+    is_closed = models.BooleanField(
+        _("is closed"),
+        default=False,
+        help_text=_("Marks the course as closed so its grades and attendance can no longer be modified.")
+    )
 
     def __str__(self):
         return f"{self.subject.name} ({self.get_day_of_week_display()} {self.start_time.strftime('%H:%M')}) - {self.academic_period}"

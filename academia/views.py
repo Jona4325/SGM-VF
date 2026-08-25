@@ -27,6 +27,30 @@ class SuperuserRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_superuser
 
+class ClosedCourseProtectionMixin:
+    closed_redirect_url = reverse_lazy('academia:index')
+    closed_course_message = _('No se pueden modificar registros de un curso cerrado.')
+
+    def get_course_from_object(self, obj):
+        if obj is None:
+            return None
+        if hasattr(obj, 'course'):
+            return obj.course
+        enrollment = getattr(obj, 'enrollment', None)
+        if enrollment is not None:
+            return enrollment.course
+        return None
+
+    def dispatch(self, request, *args, **kwargs):
+        if kwargs.get(self.pk_url_kwarg or 'pk') is not None:
+            obj = self.get_object()
+            course = self.get_course_from_object(obj)
+            if course and course.is_closed:
+                messages.error(request, self.closed_course_message)
+                return redirect(self.closed_redirect_url)
+
+        return super().dispatch(request, *args, **kwargs)
+
 
 class PaginationQueryMixin:
     """
@@ -594,7 +618,13 @@ class EnrollmentCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, Superu
         context['submit_button_text'] = 'Guardar Inscripción'
         return context
 
-class EnrollmentUpdateView(LoginRequiredMixin, SuperuserRequiredMixin, UpdateView):
+    def form_valid(self, form):
+        if form.cleaned_data['course'].is_closed:
+            form.add_error('course', _('No se pueden crear inscripciones en un curso cerrado.'))
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+class EnrollmentUpdateView(ClosedCourseProtectionMixin, LoginRequiredMixin, SuperuserRequiredMixin, UpdateView):
     model = Enrollment
     form_class = EnrollmentForm
     template_name = 'academia/enrollment_form.html'
@@ -623,6 +653,13 @@ class EnrollmentDeleteView(LoginRequiredMixin, SuperuserRequiredMixin, DeleteVie
         return Enrollment.objects.select_related(
             'student', 'course', 'course__subject'
         )
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.course.is_closed:
+            messages.error(request, _('No se pueden eliminar inscripciones de un curso cerrado.'))
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -747,7 +784,13 @@ class AttendanceLogCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, Sup
         context['submit_button_text'] = 'Guardar Registro'
         return context
 
-class AttendanceLogUpdateView(LoginRequiredMixin, UpdateView):
+    def form_valid(self, form):
+        if form.cleaned_data['enrollment'].course.is_closed:
+            form.add_error('enrollment', _('No se pueden crear asistencias en un curso cerrado.'))
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+class AttendanceLogUpdateView(ClosedCourseProtectionMixin, LoginRequiredMixin, UpdateView):
     model = AttendanceLog
     form_class = AttendanceLogForm
     template_name = 'academia/attendancelog_form.html'
@@ -790,6 +833,13 @@ class AttendanceLogDeleteView(LoginRequiredMixin, DeleteView):
         except Teacher.DoesNotExist:
             return AttendanceLog.objects.none()
 
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.enrollment.course.is_closed:
+            messages.error(request, _('No se pueden eliminar asistencias de un curso cerrado.'))
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_page'] = 'attendancelogs'
@@ -824,6 +874,9 @@ class TakeAttendanceView(LoginRequiredMixin,View):
         if selection_form.is_valid() and 'course' in request.GET:
             course_id = selection_form.cleaned_data['course'].id
             course_obj = get_object_or_404(Course.objects.select_related('subject'), pk=course_id)
+            if course_obj.is_closed:
+                messages.error(request, _('No se pueden registrar asistencias en un curso cerrado.'))
+                return redirect(reverse_lazy('academia:attendancelog-list'))
             lesson_date_val = selection_form.cleaned_data['lesson_date']
             lesson_number_val = selection_form.cleaned_data['lesson_number']
 
@@ -879,6 +932,10 @@ class TakeAttendanceView(LoginRequiredMixin,View):
 
         try:
             course_obj = get_object_or_404(Course.objects.select_related('subject'), pk=course_id)
+
+            if course_obj.is_closed:
+                messages.error(request, _('No se pueden registrar asistencias en un curso cerrado.'))
+                return redirect(reverse_lazy('academia:attendancelog-list'))
 
             # Verificación de permisos en el backend
             if not request.user.is_superuser:
@@ -960,6 +1017,9 @@ class TakeGradesView(LoginRequiredMixin,View):
 
         if selection_form.is_valid() and 'course' in request.GET:
             course_obj = selection_form.cleaned_data['course']
+            if course_obj.is_closed:
+                messages.error(request, _('No se pueden registrar notas en un curso cerrado.'))
+                return redirect(reverse_lazy('academia:grade-list'))
             lesson_number_val = selection_form.cleaned_data['lesson_number']
             grade_type_val = selection_form.cleaned_data['grade_type']
 
@@ -1013,6 +1073,10 @@ class TakeGradesView(LoginRequiredMixin,View):
 
         try:
             course_obj = get_object_or_404(Course, pk=course_id)
+
+            if course_obj.is_closed:
+                messages.error(request, _('No se pueden registrar notas en un curso cerrado.'))
+                return redirect(reverse_lazy('academia:grade-list'))
 
             # Verificación de permisos en el backend
             if not request.user.is_superuser:
@@ -1165,7 +1229,13 @@ class GradeCreateView(DuplicateAwareCreateMixin, LoginRequiredMixin, SuperuserRe
         context['submit_button_text'] = _('Save Grade')
         return context
 
-class GradeUpdateView(LoginRequiredMixin, UpdateView):
+    def form_valid(self, form):
+        if form.cleaned_data['enrollment'].course.is_closed:
+            form.add_error('enrollment', _('No se pueden crear notas en un curso cerrado.'))
+            return self.form_invalid(form)
+        return super().form_valid(form)
+
+class GradeUpdateView(ClosedCourseProtectionMixin, LoginRequiredMixin, UpdateView):
     model = Grade
     form_class = GradeForm
     template_name = 'academia/grade_form.html'
@@ -1204,6 +1274,13 @@ class GradeDeleteView(LoginRequiredMixin, DeleteView):
             return Grade.objects.filter(enrollment__course__teacher=user.teacher).select_related('enrollment__student', 'enrollment__course')
         except Teacher.DoesNotExist:
             return Grade.objects.none()
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.enrollment.course.is_closed:
+            messages.error(request, _('No se pueden eliminar notas de un curso cerrado.'))
+            return redirect(self.success_url)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1309,6 +1386,10 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         form = self.form_class(request.POST)
         if form.is_valid():
             course = form.cleaned_data['course']
+            if course.is_closed:
+                messages.info(request, _('Este curso ya está cerrado.'))
+                return redirect(f"{reverse_lazy('academia:close-period')}?course={course.id}")
+
             try:
                 with transaction.atomic():
                     enrollments_to_update = Enrollment.objects.filter(course=course)
@@ -1318,6 +1399,8 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
                         enrollment.exam_score = final_data['exam_score']
                         enrollment.status = final_data['status']
                         enrollment.save(update_fields=['lesson_score', 'exam_score', 'status'])
+                    course.is_closed = True
+                    course.save(update_fields=['is_closed'])
                 messages.success(request, _("Successfully closed the period for course '%(course)s'. %(count)d student records were updated.") % {'course': course, 'count': enrollments_to_update.count()})
                 return redirect(f"{reverse_lazy('academia:close-period')}?course={course.id}")
             except Exception as e:

@@ -549,6 +549,13 @@ def assistance_create(request):
     children_list = child.objects.none()
     selected_groupage = None
     selected_groupage_id = request.GET.get('groupage')
+    selected_load_scope = request.GET.get('load_scope', 'groupage')
+
+    def get_children_for_scope(scope_value, groupage_obj=None):
+        children_qs = get_active_children_queryset()
+        if scope_value == 'groupage' and groupage_obj is not None:
+            children_qs = children_qs.filter(groupage=groupage_obj)
+        return children_qs.order_by('surname', 'name')
 
     if request.method == 'POST':
         form = BatchAssistanceForm(request.POST)
@@ -556,19 +563,22 @@ def assistance_create(request):
             date_obj = form.cleaned_data['date']
             group_obj = form.cleaned_data['group']
             coordinator_obj = form.cleaned_data['coordinator']
+            selected_load_scope = form.cleaned_data['load_scope']
             selected_groupage = form.cleaned_data['groupage']
 
-            children_list = get_active_children_queryset().filter(
-                groupage=selected_groupage,
-            ).order_by('surname', 'name')
+            children_list = get_children_for_scope(selected_load_scope, selected_groupage)
 
             if not children_list.exists():
-                messages.warning(request, 'No hay niños activos en el grupo de edad seleccionado.')
+                if selected_load_scope == 'all':
+                    messages.warning(request, 'No hay niños activos disponibles para registrar asistencia.')
+                else:
+                    messages.warning(request, 'No hay niños activos en el grupo de edad seleccionado.')
                 return render(request, 'pusukids/assistance_batch_form.html', {
                     'form': form,
                     'children': children_list,
                     'selected_groupage': selected_groupage,
-                    'selected_groupage_id': selected_groupage.pk,
+                    'selected_groupage_id': selected_groupage.pk if selected_groupage else None,
+                    'selected_load_scope': selected_load_scope,
                     'groupage_options': groupage.objects.order_by('name'),
                     'action_title': 'Registrar Asistencia Grupal'
                 })
@@ -612,21 +622,23 @@ def assistance_create(request):
             else:
                 messages.warning(request, 'No hay niños disponibles para registrar asistencia con ese filtro.')
         else:
+            selected_load_scope = request.POST.get('load_scope', 'groupage')
             posted_groupage_id = request.POST.get('groupage')
-            if posted_groupage_id and posted_groupage_id.isdigit():
+            if selected_load_scope == 'all':
+                children_list = get_children_for_scope('all')
+            elif posted_groupage_id and posted_groupage_id.isdigit():
                 selected_groupage = groupage.objects.filter(pk=posted_groupage_id).first()
                 if selected_groupage:
-                    children_list = get_active_children_queryset().filter(
-                        groupage=selected_groupage,
-                    ).order_by('surname', 'name')
+                    children_list = get_children_for_scope('groupage', selected_groupage)
     else:
-        if selected_groupage_id and selected_groupage_id.isdigit():
+        if selected_load_scope == 'all':
+            children_list = get_children_for_scope('all')
+            form = BatchAssistanceForm(initial={'load_scope': 'all'})
+        elif selected_groupage_id and selected_groupage_id.isdigit():
             selected_groupage = groupage.objects.filter(pk=selected_groupage_id).first()
             if selected_groupage:
-                children_list = get_active_children_queryset().filter(
-                    groupage=selected_groupage,
-                ).order_by('surname', 'name')
-                form = BatchAssistanceForm(initial={'groupage': selected_groupage.pk})
+                children_list = get_children_for_scope('groupage', selected_groupage)
+                form = BatchAssistanceForm(initial={'groupage': selected_groupage.pk, 'load_scope': 'groupage'})
             else:
                 form = BatchAssistanceForm()
                 selected_groupage_id = None
@@ -638,6 +650,7 @@ def assistance_create(request):
         'children': children_list,
         'selected_groupage': selected_groupage,
         'selected_groupage_id': selected_groupage.pk if selected_groupage else None,
+        'selected_load_scope': selected_load_scope,
         'groupage_options': groupage.objects.order_by('name'),
         'action_title': 'Registrar Asistencia Grupal'
     })

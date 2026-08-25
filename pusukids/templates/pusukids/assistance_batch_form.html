@@ -8,7 +8,7 @@
         <h2 class="section-title">
             <i class="fas fa-clipboard-check me-2" style="color: var(--forest-700);"></i>{{ action_title|default:"Registrar Asistencia Grupal" }}
         </h2>
-        <p class="section-subtitle">Primero filtra por grupo de edad para cargar solo los niños correspondientes.</p>
+        <p class="section-subtitle">Puedes filtrar por grupo de edad o cargar a todos los niños activos sin filtro.</p>
     </div>
     <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Volver al Menú
@@ -18,9 +18,16 @@
 <div class="card ministry-card mt-3">
     <div class="card-body p-4">
         <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-3">
+                <label for="load-scope" class="form-label">Modo de carga</label>
+                <select id="load-scope" name="load_scope" class="form-control" onchange="toggleGroupageField(this.value)">
+                    <option value="groupage" {% if selected_load_scope != 'all' %}selected{% endif %}>Por grupo de edad</option>
+                    <option value="all" {% if selected_load_scope == 'all' %}selected{% endif %}>Todos los niños</option>
+                </select>
+            </div>
+            <div class="col-md-6 col-lg-4" id="groupage-field-wrapper">
                 <label for="groupage-filter" class="form-label">Grupo de Edad</label>
-                <select id="groupage-filter" name="groupage" class="form-control" required>
+                <select id="groupage-filter" name="groupage" class="form-control">
                     <option value="">Selecciona un grupo de edad</option>
                     {% for ga in groupage_options %}
                     <option value="{{ ga.pk }}" {% if selected_groupage_id == ga.pk %}selected{% endif %}>{{ ga.name }} - {{ ga.description }}</option>
@@ -37,16 +44,21 @@
     </div>
 </div>
 
-{% if selected_groupage %}
+{% if selected_load_scope == 'all' or selected_groupage %}
 <div class="card ministry-card mt-3">
     <div class="card-body p-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            {% if selected_load_scope == 'all' %}
+            <h5 class="mb-0">Todos los niños activos</h5>
+            {% else %}
             <h5 class="mb-0">Niños activos del grupo: <strong>{{ selected_groupage.name }}</strong></h5>
+            {% endif %}
             <span class="badge bg-success">Total: {{ children|length }}</span>
         </div>
 
         <form method="post" novalidate>
             {% csrf_token %}
+            <input type="hidden" name="load_scope" value="{{ selected_load_scope|default:'groupage' }}">
             {{ form.groupage.as_hidden }}
 
             {% if form.non_field_errors %}
@@ -112,4 +124,24 @@
     Selecciona un grupo de edad y presiona "Cargar Niños" para iniciar la toma de asistencia.
 </div>
 {% endif %}
+
+<script>
+function toggleGroupageField(scopeValue) {
+    const wrapper = document.getElementById('groupage-field-wrapper');
+    const groupageSelect = document.getElementById('groupage-filter');
+    if (!wrapper || !groupageSelect) return;
+
+    const showGroupage = scopeValue !== 'all';
+    wrapper.style.display = showGroupage ? '' : 'none';
+    groupageSelect.disabled = !showGroupage;
+    groupageSelect.required = showGroupage;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const scopeSelect = document.getElementById('load-scope');
+    if (scopeSelect) {
+        toggleGroupageField(scopeSelect.value);
+    }
+});
+</script>
 {% endblock %}

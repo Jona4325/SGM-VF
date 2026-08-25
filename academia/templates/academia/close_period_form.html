@@ -88,14 +88,20 @@
 
             <!-- Confirmation Form -->
             <div class="mt-4 text-center">
-                <p class="text-danger"><strong><i class="fas fa-exclamation-triangle me-2"></i>{% trans "Warning:" %}</strong> {% trans "This action is irreversible. It will update the final scores and status for all students in this course." %}</p>
-                <form method="post" action="{% url 'academia:close-period' %}" class="d-inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="course" value="{{ course.id }}">
-                    <button type="submit" class="btn btn-danger btn-lg">
-                        <i class="fas fa-lock me-2"></i> {% trans "Confirm and Close Period" %}
-                    </button>
-                </form>
+                {% if course.is_closed %}
+                    <div class="alert alert-secondary mb-0" role="alert">
+                        {% trans "This course is already closed. Grades and attendance are locked." %}
+                    </div>
+                {% else %}
+                    <p class="text-danger"><strong><i class="fas fa-exclamation-triangle me-2"></i>{% trans "Warning:" %}</strong> {% trans "This action is irreversible. It will update the final scores and status for all students in this course." %}</p>
+                    <form method="post" action="{% url 'academia:close-period' %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="course" value="{{ course.id }}">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-lock me-2"></i> {% trans "Confirm and Close Period" %}
+                        </button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>

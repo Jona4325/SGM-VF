@@ -173,6 +173,14 @@ class ExpenseForm(forms.ModelForm):
         self.fields['fecha'].queryset = fecha.objects.order_by('-date')        
 
 class BatchAssistanceForm(forms.Form):
+    load_scope = forms.ChoiceField(
+        choices=(
+            ('groupage', 'Por grupo de edad'),
+            ('all', 'Todos los niños'),
+        ),
+        label='Alcance de carga',
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
     date = forms.ModelChoiceField(
         queryset=fecha.objects.none(), # Queryset inicial vacío, se llenará en __init__
         label="Fecha de Asistencia",
@@ -191,7 +199,8 @@ class BatchAssistanceForm(forms.Form):
     groupage = forms.ModelChoiceField(
         queryset=groupage.objects.all().order_by('name'),
         label="Grupo de Edad",
-        widget=forms.Select(attrs={'class': 'form-control'})
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -204,6 +213,16 @@ class BatchAssistanceForm(forms.Form):
         self.fields['group'].queryset = group.objects.order_by('name')
         self.fields['coordinator'].queryset = coordinator.objects.order_by('surname', 'name')
         self.fields['groupage'].queryset = groupage.objects.order_by('name')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        load_scope = cleaned_data.get('load_scope')
+        selected_groupage = cleaned_data.get('groupage')
+
+        if load_scope == 'groupage' and not selected_groupage:
+            self.add_error('groupage', 'Selecciona un grupo de edad o cambia el alcance a "Todos los niños".')
+
+        return cleaned_data
 
 class FechaForm(forms.ModelForm):
     class Meta:
