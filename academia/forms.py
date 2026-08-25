@@ -342,3 +342,29 @@ class ClosePeriodForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-control select2'}),
         help_text=_("Select the course to close the period and calculate final grades.")
     )
+
+
+class ClosedCourseReportForm(forms.Form):
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.filter(is_closed=True).select_related('subject').order_by('-academic_period', 'subject__name'),
+        label='Curso cerrado',
+        widget=forms.Select(attrs={'class': 'form-control select2'}),
+        help_text='Selecciona un curso cerrado para ver el reporte final de notas.'
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['course'].queryset = Course.objects.filter(is_closed=True).select_related('subject').order_by('-academic_period', 'subject__name')
+
+
+class StudentAcademicHistoryForm(forms.Form):
+    student = forms.ModelChoiceField(
+        queryset=Student.objects.select_related().order_by('surname', 'name'),
+        label='Estudiante',
+        widget=forms.Select(attrs={'class': 'form-control select2'}),
+        help_text='Selecciona un estudiante para ver su historial académico.'
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['student'].queryset = Student.objects.order_by('surname', 'name')

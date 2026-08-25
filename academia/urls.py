@@ -57,6 +57,13 @@ urlpatterns = [
     path('grades/<int:pk>/', views.GradeDetailView.as_view(), name='grade-detail'),
     path('grades/<int:pk>/edit/', views.GradeUpdateView.as_view(), name='grade-update'),
     path('grades/<int:pk>/delete/', views.GradeDeleteView.as_view(), name='grade-delete'),
+
+    # URLs para Reportes
+    path('reports/', views.ReportsMenuView.as_view(), name='reports-menu'),
+    path('reports/final-grades/', views.FinalGradesReportView.as_view(), name='final-grades-report'),
+    path('reports/final-grades/pdf/', views.FinalGradesReportPdfView.as_view(), name='final-grades-report-pdf'),
+    path('reports/student-history/', views.StudentAcademicHistoryView.as_view(), name='student-academic-history-report'),
+    path('reports/student-history/pdf/', views.StudentAcademicHistoryPdfView.as_view(), name='student-academic-history-report-pdf'),
     
     # --- NUEVA URL PARA CIERRE DE PERIODO ---
     path('courses/close-period/', views.ClosePeriodView.as_view(), name='close-period'),

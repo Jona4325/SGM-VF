@@ -8,16 +8,24 @@ from django.views import View
 from django.forms import formset_factory
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
+from django.http import HttpResponse
 from django.db.models import Avg, Q
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
+from io import BytesIO
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 from .models import Teacher, Student, Subject, Course, Enrollment, AttendanceLog, Grade
 from .forms import (
-    TeacherForm, StudentForm, SubjectForm, CourseForm, EnrollmentForm, AttendanceLogForm, AttendanceTakingSelectionForm, StudentAttendanceForm, GradeForm, GradeTakingSelectionForm, StudentGradeForm, ClosePeriodForm
+    TeacherForm, StudentForm, SubjectForm, CourseForm, EnrollmentForm, AttendanceLogForm, AttendanceTakingSelectionForm, StudentAttendanceForm, GradeForm, GradeTakingSelectionForm, StudentGradeForm, ClosePeriodForm, ClosedCourseReportForm, StudentAcademicHistoryForm
 )
 
 class SuperuserRequiredMixin(UserPassesTestMixin):
@@ -112,6 +120,256 @@ class DuplicateAwareCreateMixin:
             form.add_error(None, self.duplicate_error_message)
             messages.error(self.request, self.duplicate_error_message)
             return super().form_invalid(form)
+
+
+def calculate_closed_course_student_data(enrollment):
+    attendance_score = enrollment.attendance_score
+
+    avg_lesson_score_result = Grade.objects.filter(
+        enrollment=enrollment, grade_type='Leccion'
+    ).aggregate(avg=Avg('grade'))
+    avg_lesson_score = avg_lesson_score_result['avg']
+
+    exam_grade_obj = Grade.objects.filter(
+        enrollment=enrollment, grade_type='Examen'
+    ).first()
+    exam_score = exam_grade_obj.grade if exam_grade_obj else None
+
+    scores_to_average = []
+    if attendance_score is not None:
+        scores_to_average.append(Decimal(attendance_score))
+    if avg_lesson_score is not None:
+        scores_to_average.append(Decimal(avg_lesson_score))
+    if exam_score is not None:
+        scores_to_average.append(Decimal(exam_score))
+
+    final_average = None
+    if scores_to_average:
+        final_average = sum(scores_to_average) / Decimal(len(scores_to_average))
+        final_average = final_average.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+    status = enrollment.status
+    if final_average is not None:
+        if final_average >= 70:
+            status = Enrollment.Status.APPROVED
+        else:
+            status = Enrollment.Status.REPROVED
+
+    return {
+        'student': enrollment.student,
+        'enrollment_id': enrollment.id,
+        'attendance_score': attendance_score,
+        'lesson_score': avg_lesson_score,
+        'exam_score': exam_score,
+        'final_average': final_average,
+        'status': status,
+        'status_display': Enrollment.Status(status).label,
+    }
+
+
+def get_closed_course_report_rows(course):
+    enrollments = Enrollment.objects.filter(course=course).select_related('student').order_by('student__surname', 'student__name')
+    return [calculate_closed_course_student_data(enrollment) for enrollment in enrollments]
+
+
+def get_student_academic_history_rows(student):
+    enrollments = Enrollment.objects.filter(student=student).select_related(
+        'course__subject',
+        'course__teacher',
+    ).order_by('-course__academic_period', 'course__subject__name')
+
+    rows = []
+    for enrollment in enrollments:
+        row = calculate_closed_course_student_data(enrollment)
+        row['course'] = enrollment.course
+        row['course_is_closed'] = enrollment.course.is_closed
+        row['status_display'] = enrollment.get_status_display()
+        rows.append(row)
+
+    return rows
+
+
+def build_final_grades_pdf(course, student_data):
+    buffer = BytesIO()
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=15 * mm,
+        leftMargin=15 * mm,
+        topMargin=15 * mm,
+        bottomMargin=15 * mm,
+        title=f'Reporte Final de Notas - {course}',
+        author='Academia Bíblica',
+    )
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name='ReportTitle',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        leading=22,
+        textColor=colors.HexColor('#1f5b4d'),
+        spaceAfter=8,
+    ))
+    styles.add(ParagraphStyle(
+        name='ReportSubTitle',
+        parent=styles['BodyText'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=12,
+        textColor=colors.HexColor('#5b6b65'),
+        spaceAfter=8,
+    ))
+
+    story = [
+        Paragraph('Reporte Final de Notas', styles['ReportTitle']),
+        Paragraph(f'Curso: <b>{course}</b>', styles['ReportSubTitle']),
+        Paragraph(f'Periodo académico: <b>{course.academic_period}</b> | Asignatura: <b>{course.subject.name}</b>', styles['ReportSubTitle']),
+        Paragraph('Este reporte muestra los promedios consolidados utilizados al cerrar el período.', styles['ReportSubTitle']),
+        Spacer(1, 8),
+    ]
+
+    table_data = [[
+        'Estudiante',
+        'Asistencia',
+        'Prom. Lecciones',
+        'Examen',
+        'Promedio Final',
+        'Estado'
+    ]]
+
+    for data in student_data:
+        table_data.append([
+            str(data['student']),
+            f"{data['attendance_score']:.2f}%" if data['attendance_score'] is not None else 'N/A',
+            f"{data['lesson_score']:.2f}" if data['lesson_score'] is not None else 'N/A',
+            f"{data['exam_score']:.2f}" if data['exam_score'] is not None else 'N/A',
+            f"{data['final_average']:.2f}" if data['final_average'] is not None else 'N/A',
+            data['status_display'],
+        ])
+
+    table = Table(table_data, repeatRows=1, colWidths=[58 * mm, 22 * mm, 25 * mm, 22 * mm, 25 * mm, 22 * mm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f5b4d')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (1, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#d7e0dc')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f6f9f8')]),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(table)
+
+    def add_page_number(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColor(colors.HexColor('#5b6b65'))
+        canvas.drawString(15 * mm, 10 * mm, 'Academia Bíblica')
+        canvas.drawRightString(195 * mm, 10 * mm, f'Página {doc.page}')
+        canvas.restoreState()
+
+    document.build(story, onFirstPage=add_page_number, onLaterPages=add_page_number)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
+
+
+def build_student_academic_history_pdf(student, history_rows):
+    buffer = BytesIO()
+    document = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=15 * mm,
+        leftMargin=15 * mm,
+        topMargin=15 * mm,
+        bottomMargin=15 * mm,
+        title=f'Historial Académico - {student}',
+        author='Academia Bíblica',
+    )
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name='HistoryTitle',
+        parent=styles['Title'],
+        fontName='Helvetica-Bold',
+        fontSize=18,
+        leading=22,
+        textColor=colors.HexColor('#1f5b4d'),
+        spaceAfter=8,
+    ))
+    styles.add(ParagraphStyle(
+        name='HistorySubTitle',
+        parent=styles['BodyText'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=12,
+        textColor=colors.HexColor('#5b6b65'),
+        spaceAfter=8,
+    ))
+
+    story = [
+        Paragraph('Historial Académico del Estudiante', styles['HistoryTitle']),
+        Paragraph(f'Estudiante: <b>{student}</b>', styles['HistorySubTitle']),
+        Paragraph('Este reporte lista todas las materias cursadas y las notas adquiridas.', styles['HistorySubTitle']),
+        Spacer(1, 8),
+    ]
+
+    table_data = [[
+        'Materia',
+        'Periodo',
+        'Asistencia',
+        'Prom. Lecciones',
+        'Examen',
+        'Promedio Final',
+        'Estado'
+    ]]
+
+    for data in history_rows:
+        table_data.append([
+            str(data['course'].subject.name),
+            str(data['course'].academic_period),
+            f"{data['attendance_score']:.2f}%" if data['attendance_score'] is not None else 'N/A',
+            f"{data['lesson_score']:.2f}" if data['lesson_score'] is not None else 'N/A',
+            f"{data['exam_score']:.2f}" if data['exam_score'] is not None else 'N/A',
+            f"{data['final_average']:.2f}" if data['final_average'] is not None else 'N/A',
+            data['status_display'],
+        ])
+
+    table = Table(table_data, repeatRows=1, colWidths=[42 * mm, 28 * mm, 20 * mm, 24 * mm, 20 * mm, 24 * mm, 25 * mm])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1f5b4d')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (2, 1), (-1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#d7e0dc')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f6f9f8')]),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    story.append(table)
+
+    def add_page_number(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('Helvetica', 9)
+        canvas.setFillColor(colors.HexColor('#5b6b65'))
+        canvas.drawString(15 * mm, 10 * mm, 'Academia Bíblica')
+        canvas.drawRightString(195 * mm, 10 * mm, f'Página {doc.page}')
+        canvas.restoreState()
+
+    document.build(story, onFirstPage=add_page_number, onLaterPages=add_page_number)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
 
 @login_required
 def index(request):
@@ -1309,60 +1567,6 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
     template_name = 'academia/close_period_form.html'
     form_class = ClosePeriodForm
 
-    def _calculate_student_final_data(self, enrollment):
-        """
-        Helper method to calculate all final scores and status for a single enrollment.
-        This avoids code duplication between GET and POST.
-        Returns a dictionary with the calculated data.
-        """
-        # 1. Calculate Attendance Score (0-100)
-        attendance_score = enrollment.attendance_score
-
-        # 2. Calculate Average Lesson Score
-        avg_lesson_score_result = Grade.objects.filter(
-            enrollment=enrollment, grade_type='Leccion'
-        ).aggregate(avg=Avg('grade'))
-        avg_lesson_score = avg_lesson_score_result['avg']
-
-        # 3. Get Exam Score
-        exam_grade_obj = Grade.objects.filter(
-            enrollment=enrollment, grade_type='Examen'
-        ).first()
-        exam_score = exam_grade_obj.grade if exam_grade_obj else None
-
-        # 4. Calculate Final Average
-        scores_to_average = []
-        if attendance_score is not None:
-            scores_to_average.append(Decimal(attendance_score))
-        if avg_lesson_score is not None:
-            scores_to_average.append(Decimal(avg_lesson_score))
-        if exam_score is not None:
-            scores_to_average.append(Decimal(exam_score))
-        
-        final_average = None
-        if scores_to_average:
-            final_average = sum(scores_to_average) / Decimal(len(scores_to_average))
-            final_average = final_average.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-
-        # 5. Determine Status
-        status = enrollment.status # Default to current status
-        if final_average is not None:
-            if final_average >= 70:
-                status = Enrollment.Status.APPROVED
-            else:
-                status = Enrollment.Status.REPROVED
-        
-        return {
-            'student': enrollment.student,
-            'enrollment_id': enrollment.id,
-            'attendance_score': attendance_score,
-            'lesson_score': avg_lesson_score,
-            'exam_score': exam_score,
-            'final_average': final_average,
-            'status': status,
-            'status_display': Enrollment.Status(status).label,
-        }
-
     def get(self, request, *args, **kwargs):
         form = self.form_class(request.GET or None)
         context = {
@@ -1378,7 +1582,7 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
             context['course'] = course
             
             enrollments = Enrollment.objects.filter(course=course).select_related('student').order_by('student__surname', 'student__name')
-            context['student_data'] = [self._calculate_student_final_data(e) for e in enrollments]
+            context['student_data'] = [calculate_closed_course_student_data(e) for e in enrollments]
 
         return render(request, self.template_name, context)
 
@@ -1394,7 +1598,7 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
                 with transaction.atomic():
                     enrollments_to_update = Enrollment.objects.filter(course=course)
                     for enrollment in enrollments_to_update:
-                        final_data = self._calculate_student_final_data(enrollment)
+                        final_data = calculate_closed_course_student_data(enrollment)
                         enrollment.lesson_score = final_data['lesson_score']
                         enrollment.exam_score = final_data['exam_score']
                         enrollment.status = final_data['status']
@@ -1406,3 +1610,95 @@ class ClosePeriodView(LoginRequiredMixin, SuperuserRequiredMixin, View):
             except Exception as e:
                 messages.error(request, _("An error occurred while closing the period: %(error)s") % {'error': str(e)})
         return redirect(reverse_lazy('academia:close-period'))
+
+
+class ReportsMenuView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    template_name = 'academia/reports_menu.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {
+            'page_title': _('Reportes de Academia'),
+            'active_page': 'reports',
+        })
+
+
+class FinalGradesReportView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    template_name = 'academia/final_grades_report.html'
+    form_class = ClosedCourseReportForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        course = None
+        student_data = []
+
+        if form.is_valid():
+            course = form.cleaned_data['course']
+            student_data = get_closed_course_report_rows(course)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'course': course,
+            'student_data': student_data,
+            'page_title': _('Reporte Final de Notas'),
+            'active_page': 'reports',
+        })
+
+
+class FinalGradesReportPdfView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    form_class = ClosedCourseReportForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        if not form.is_valid():
+            messages.error(request, _('Selecciona un curso cerrado válido para exportar el PDF.'))
+            return redirect(reverse_lazy('academia:final-grades-report'))
+
+        course = form.cleaned_data['course']
+        student_data = get_closed_course_report_rows(course)
+        pdf_bytes = build_final_grades_pdf(course, student_data)
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        safe_course_name = str(course).replace('/', '-').replace(' ', '_')
+        response['Content-Disposition'] = f'attachment; filename="reporte_notas_{safe_course_name}.pdf"'
+        return response
+
+
+class StudentAcademicHistoryView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    template_name = 'academia/student_academic_history_report.html'
+    form_class = StudentAcademicHistoryForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        student = None
+        history_rows = []
+
+        if form.is_valid():
+            student = form.cleaned_data['student']
+            history_rows = get_student_academic_history_rows(student)
+
+        return render(request, self.template_name, {
+            'form': form,
+            'student': student,
+            'history_rows': history_rows,
+            'page_title': _('Reporte de Historial Académico'),
+            'active_page': 'reports',
+        })
+
+
+class StudentAcademicHistoryPdfView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    form_class = StudentAcademicHistoryForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        if not form.is_valid():
+            messages.error(request, _('Selecciona un estudiante válido para exportar el PDF.'))
+            return redirect(reverse_lazy('academia:student-academic-history-report'))
+
+        student = form.cleaned_data['student']
+        history_rows = get_student_academic_history_rows(student)
+        pdf_bytes = build_student_academic_history_pdf(student, history_rows)
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        safe_student_name = str(student).replace('/', '-').replace(' ', '_')
+        response['Content-Disposition'] = f'attachment; filename="historial_academico_{safe_student_name}.pdf"'
+        return response
