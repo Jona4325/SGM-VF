@@ -60,6 +60,8 @@ urlpatterns = [
 
     # URLs para Reportes
     path('reports/', views.ReportsMenuView.as_view(), name='reports-menu'),
+    path('reports/enrolled-students/', views.EnrolledStudentsReportView.as_view(), name='enrolled-students-report'),
+    path('reports/enrolled-students/xlsx/', views.EnrolledStudentsReportXlsxView.as_view(), name='enrolled-students-report-xlsx'),
     path('reports/final-grades/', views.FinalGradesReportView.as_view(), name='final-grades-report'),
     path('reports/final-grades/pdf/', views.FinalGradesReportPdfView.as_view(), name='final-grades-report-pdf'),
     path('reports/student-history/', views.StudentAcademicHistoryView.as_view(), name='student-academic-history-report'),

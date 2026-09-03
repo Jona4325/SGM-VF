@@ -394,6 +394,42 @@ class ClosedCourseReportForm(forms.Form):
         return queryset.filter(is_closed=True)
 
 
+class EnrolledStudentsReportForm(forms.Form):
+    academic_period = forms.ChoiceField(
+        choices=(),
+        label='Periodo Académico',
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control select2', 'onchange': 'this.form.submit();'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        academic_periods = list(
+            Course.objects.values_list('academic_period', flat=True).distinct().order_by('-academic_period')
+        )
+        period_choices = [('', 'Selecciona un periodo')]
+        period_choices.extend((period, period) for period in academic_periods)
+        self.fields['academic_period'].choices = period_choices
+
+        selected_period = self.data.get('academic_period') or self.initial.get('academic_period') or self._infer_period_from_course()
+        if not selected_period:
+            selected_period = academic_periods[0] if academic_periods else ''
+
+        self.fields['academic_period'].initial = selected_period
+        self.fields['academic_period'].choices = period_choices
+
+    def _infer_period_from_course(self):
+        course_id = self.data.get('course') or self.initial.get('course')
+        if not course_id:
+            return None
+
+        course = Course.objects.filter(pk=course_id).only('academic_period').first()
+        if course is None:
+            return None
+
+        return course.academic_period
+
+
 class StudentAcademicHistoryForm(forms.Form):
     student = forms.ModelChoiceField(
         queryset=Student.objects.select_related().order_by('surname', 'name'),

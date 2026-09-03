@@ -17,6 +17,10 @@ from decimal import Decimal, ROUND_HALF_UP
 from datetime import date
 from io import BytesIO
 
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -25,7 +29,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 
 from .models import Teacher, Student, Subject, Course, Enrollment, AttendanceLog, Grade
 from .forms import (
-    TeacherForm, StudentForm, SubjectForm, CourseForm, EnrollmentForm, AttendanceLogForm, AttendanceTakingSelectionForm, StudentAttendanceForm, GradeForm, GradeTakingSelectionForm, StudentGradeForm, ClosePeriodForm, ClosedCourseReportForm, StudentAcademicHistoryForm
+    TeacherForm, StudentForm, SubjectForm, CourseForm, EnrollmentForm, AttendanceLogForm, AttendanceTakingSelectionForm, StudentAttendanceForm, GradeForm, GradeTakingSelectionForm, StudentGradeForm, ClosePeriodForm, ClosedCourseReportForm, EnrolledStudentsReportForm, StudentAcademicHistoryForm
 )
 
 class SuperuserRequiredMixin(UserPassesTestMixin):
@@ -172,6 +176,28 @@ def get_closed_course_report_rows(course):
     return [calculate_closed_course_student_data(enrollment) for enrollment in enrollments]
 
 
+def get_enrolled_students_report_rows(academic_period):
+    enrollments = Enrollment.objects.filter(course__academic_period=academic_period).select_related(
+        'student', 'course', 'course__subject', 'course__teacher'
+    ).order_by('course__subject__name', 'course__academic_period', 'student__surname', 'student__name')
+
+    rows = []
+    for index, enrollment in enumerate(enrollments, start=1):
+        rows.append({
+            'number': index,
+            'student': enrollment.student,
+            'course': enrollment.course,
+            'enrollment_date': enrollment.enrollment_date,
+            'status_display': enrollment.get_status_display(),
+            'attendance_score': enrollment.attendance_score,
+            'lesson_score': enrollment.lesson_score,
+            'exam_score': enrollment.exam_score,
+            'final_grade': enrollment.final_grade,
+        })
+
+    return rows
+
+
 def get_student_academic_history_rows(student):
     enrollments = Enrollment.objects.filter(student=student).select_related(
         'course__subject',
@@ -278,6 +304,77 @@ def build_final_grades_pdf(course, student_data):
     pdf = buffer.getvalue()
     buffer.close()
     return pdf
+
+
+def build_enrolled_students_xlsx(academic_period, enrolled_rows):
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = 'Matriculados'
+
+    title_fill = PatternFill('solid', fgColor='1F5B4D')
+    header_fill = PatternFill('solid', fgColor='D7E0DC')
+    title_font = Font(color='FFFFFF', bold=True, size=14)
+    header_font = Font(bold=True, color='1F1F1F')
+    center_alignment = Alignment(horizontal='center', vertical='center')
+    left_alignment = Alignment(horizontal='left', vertical='center')
+
+    headers = [
+        '#', 'Estudiante', 'Curso', 'Periodo Académico', 'Fecha de Matrícula',
+        'Estado', 'Asistencia', 'Prom. Lecciones', 'Examen', 'Promedio Final'
+    ]
+
+    worksheet.append(['Listado de alumnos matriculados'])
+    worksheet.append([f'Periodo académico: {academic_period}'])
+    worksheet.append([])
+    worksheet.append(headers)
+
+    for row in enrolled_rows:
+        worksheet.append([
+            row['number'],
+            str(row['student']),
+            str(row['course'].subject.name),
+            str(row['course'].academic_period),
+            row['enrollment_date'],
+            row['status_display'],
+            row['attendance_score'],
+            row['lesson_score'],
+            row['exam_score'],
+            row['final_grade'],
+        ])
+
+    worksheet.merge_cells('A1:J1')
+    worksheet.merge_cells('A2:J2')
+    worksheet.merge_cells('A3:J3')
+
+    for cell in worksheet[1]:
+        cell.fill = title_fill
+        cell.font = title_font
+        cell.alignment = left_alignment
+
+    for cell in worksheet[5]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = center_alignment
+
+    for row in worksheet.iter_rows(min_row=6, max_row=worksheet.max_row):
+        for cell in row:
+            cell.alignment = center_alignment if cell.column != 2 else left_alignment
+            if cell.column in (7, 8, 9, 10) and cell.value is not None:
+                cell.number_format = '0.00'
+            if cell.column == 5 and cell.value is not None:
+                cell.number_format = 'DD/MM/YYYY'
+
+    widths = {
+        1: 6, 2: 28, 3: 28, 4: 20, 5: 18,
+        6: 16, 7: 14, 8: 16, 9: 14, 10: 16,
+    }
+    for column_index, width in widths.items():
+        worksheet.column_dimensions[get_column_letter(column_index)].width = width
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+    return output.getvalue()
 
 
 def build_student_academic_history_pdf(student, history_rows):
@@ -1662,6 +1759,53 @@ class FinalGradesReportPdfView(LoginRequiredMixin, SuperuserRequiredMixin, View)
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         safe_course_name = str(course).replace('/', '-').replace(' ', '_')
         response['Content-Disposition'] = f'attachment; filename="reporte_notas_{safe_course_name}.pdf"'
+        return response
+
+
+class EnrolledStudentsReportView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    template_name = 'academia/enrolled_students_report.html'
+    form_class = EnrolledStudentsReportForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        academic_period = form.fields['academic_period'].initial
+        enrolled_rows = []
+        course_count = 0
+
+        if form.is_valid():
+            academic_period = form.cleaned_data['academic_period'] or academic_period
+            enrolled_rows = get_enrolled_students_report_rows(academic_period)
+            course_count = Enrollment.objects.filter(course__academic_period=academic_period).values('course_id').distinct().count()
+
+        return render(request, self.template_name, {
+            'form': form,
+            'academic_period': academic_period,
+            'enrolled_rows': enrolled_rows,
+            'course_count': course_count,
+            'page_title': _('Listado de Alumnos Matriculados'),
+            'active_page': 'reports',
+        })
+
+
+class EnrolledStudentsReportXlsxView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    form_class = EnrolledStudentsReportForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class(request.GET or None)
+        if not form.is_valid() or not form.cleaned_data.get('academic_period'):
+            messages.error(request, _('Selecciona un periodo académico válido para exportar el Excel.'))
+            return redirect(reverse_lazy('academia:enrolled-students-report'))
+
+        academic_period = form.cleaned_data['academic_period']
+        enrolled_rows = get_enrolled_students_report_rows(academic_period)
+        xlsx_bytes = build_enrolled_students_xlsx(academic_period, enrolled_rows)
+
+        response = HttpResponse(
+            xlsx_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        safe_period_name = str(academic_period).replace('/', '-').replace(' ', '_')
+        response['Content-Disposition'] = f'attachment; filename="alumnos_matriculados_{safe_period_name}.xlsx"'
         return response
 
 

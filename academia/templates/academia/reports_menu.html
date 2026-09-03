@@ -16,6 +16,17 @@
   <div class="col">
     <div class="card h-100 ministry-card">
       <div class="card-body d-flex flex-column">
+        <div class="module-icon"><i class="fas fa-users"></i></div>
+        <h5 class="card-title">Alumnos Matriculados</h5>
+        <p class="card-text">Consulta el listado de estudiantes matriculados por curso y expórtalo a Excel.</p>
+        <a href="{% url 'academia:enrolled-students-report' %}" class="btn btn-primary mt-auto w-100">Ver Reporte</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 ministry-card">
+      <div class="card-body d-flex flex-column">
         <div class="module-icon"><i class="fas fa-file-alt"></i></div>
         <h5 class="card-title">Reporte Final de Notas</h5>
         <p class="card-text">Consulta las notas consolidadas de cursos abiertos, cerrados o todos, y expórtalas a PDF.</p>
