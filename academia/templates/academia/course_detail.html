@@ -42,9 +42,9 @@
                 <dt class="col-sm-3">Número de Lecciones (de la asignatura):</dt>
                 <dd class="col-sm-9">{{ course.subject.number_of_lessons }}</dd>
 
-                <dt class="col-sm-3">Activo:</dt>
+                <dt class="col-sm-3">Cerrado:</dt>
                 <dd class="col-sm-9">
-                    {% if course.is_active %}Sí <i class="fas fa-check-circle text-success"></i>
+                    {% if course.is_closed %}Sí <i class="fas fa-check-circle text-success"></i>
                     {% else %}No <i class="fas fa-times-circle text-danger"></i>{% endif %}
                 </dd>
             </dl>

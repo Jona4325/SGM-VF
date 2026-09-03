@@ -7,7 +7,7 @@
 <div class="section-header">
     <div>
         <h2 class="section-title">{{ page_title }}</h2>
-        <p class="section-subtitle">Listado de cursos activos y pasados de la Academia.</p>
+        <p class="section-subtitle">Listado de cursos de la Academia.</p>
     </div>
     {% if user.is_superuser %}
     <a href="{% url 'academia:course-create' %}" class="btn btn-primary">
@@ -28,7 +28,7 @@
                     <th>Hora Inicio</th>
                     <th>Inicio</th>
                     <th>Fin</th>
-                    <th>Activo</th>
+                    <th>Cerrado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -43,8 +43,8 @@
                     <td>{{ course.start_date|date:"d/m/Y" }}</td>
                     <td>{{ course.end_date|date:"d/m/Y"|default:"&mdash;" }}</td>
                     <td>
-                        {% if course.is_active %}
-                            <i class="fas fa-check-circle" style="color: var(--forest-700);"></i>
+                        {% if course.is_closed %}
+                            <i class="fas fa-check-circle text-success"></i>
                         {% else %}
                             <i class="fas fa-times-circle text-secondary"></i>
                         {% endif %}

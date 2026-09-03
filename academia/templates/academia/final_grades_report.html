@@ -9,7 +9,7 @@
         <h2 class="section-title">
             <i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>{{ page_title }}
         </h2>
-        <p class="section-subtitle">Selecciona un curso cerrado para ver el detalle final de notas.</p>
+        <p class="section-subtitle">Selecciona el estado del curso y luego el curso para ver el detalle final de notas.</p>
     </div>
     <a href="{% url 'academia:reports-menu' %}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Volver a Reportes
@@ -27,10 +27,17 @@
 
 <div class="card mb-4" style="border-radius: var(--radius-md); border: 1px solid rgba(31,91,77,0.15);">
     <div class="card-body">
-        <h6 class="fw-semibold mb-3" style="color: var(--forest-700);">{% translate "Select Closed Course" %}</h6>
+        <h6 class="fw-semibold mb-3" style="color: var(--forest-700);">{% translate "Filter and Select Course" %}</h6>
         <form method="get" action="">
             <div class="row g-3 align-items-end">
-                <div class="col-md-9">
+                <div class="col-md-3">
+                    {{ form.course_status.label_tag }}
+                    {{ form.course_status }}
+                    {% if form.course_status.errors %}
+                    <div class="invalid-feedback d-block">{{ form.course_status.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
                     {{ form.course.label_tag }}
                     {{ form.course }}
                     <small class="form-text text-muted">{{ form.course.help_text }}</small>
@@ -56,8 +63,12 @@
             <small class="text-muted">Periodo: {{ course.academic_period }} | Asignatura: {{ course.subject.name }}</small>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <span class="badge bg-success">Curso cerrado</span>
-            <a href="{% url 'academia:final-grades-report-pdf' %}?course={{ course.id }}" class="btn btn-sm btn-outline-danger">
+                {% if course.is_closed %}
+                    <span class="badge bg-success">Curso cerrado</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Curso abierto</span>
+                {% endif %}
+                <a href="{% url 'academia:final-grades-report-pdf' %}?course={{ course.id }}&course_status={{ selected_course_status|default:'closed' }}" class="btn btn-sm btn-outline-danger">
                 <i class="fas fa-file-pdf me-1"></i>Exportar PDF
             </a>
         </div>

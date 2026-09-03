@@ -1630,6 +1630,7 @@ class FinalGradesReportView(LoginRequiredMixin, SuperuserRequiredMixin, View):
         form = self.form_class(request.GET or None)
         course = None
         student_data = []
+        selected_course_status = form.fields['course_status'].initial
 
         if form.is_valid():
             course = form.cleaned_data['course']
@@ -1639,6 +1640,7 @@ class FinalGradesReportView(LoginRequiredMixin, SuperuserRequiredMixin, View):
             'form': form,
             'course': course,
             'student_data': student_data,
+            'selected_course_status': selected_course_status,
             'page_title': _('Reporte Final de Notas'),
             'active_page': 'reports',
         })

@@ -134,7 +134,6 @@ class Course(TenantAwareModel):
         blank=True, null=True,
         help_text=_("Calculated automatically if not provided, based on start date and number of lessons.")
     )
-    is_active = models.BooleanField(_("is active"), default=True, help_text=_("Is this course currently active?"))
     is_closed = models.BooleanField(
         _("is closed"),
         default=False,

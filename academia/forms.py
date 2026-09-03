@@ -97,7 +97,7 @@ class CourseForm(forms.ModelForm):
         model = Course
         fields = [
             'subject', 'teacher', 'academic_period', 'day_of_week',
-            'start_time', 'start_date', 'end_date', 'is_active'
+            'start_time', 'start_date', 'end_date'
         ]
         widgets = {
             'subject': forms.Select(attrs={'class': 'form-control select2'}), # Usar select2 para mejor UX
@@ -107,7 +107,6 @@ class CourseForm(forms.ModelForm):
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'start_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'end_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}), # El modelo lo calcula si se deja vacío
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
         labels = {
             'subject': 'Asignatura',
@@ -117,7 +116,6 @@ class CourseForm(forms.ModelForm):
             'start_time': 'Hora de Inicio',
             'start_date': 'Fecha de Inicio',
             'end_date': 'Fecha de Fin (opcional, se calcula si se deja en blanco)',
-            'is_active': '¿Está Activo?',
         }
         help_texts = {
             'end_date': Course._meta.get_field('end_date').help_text # Heredar help_text del modelo
@@ -199,9 +197,8 @@ class AttendanceLogForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtrar inscripciones solo de cursos activos
+        # Filtrar inscripciones solo de cursos no cerrados
         self.fields['enrollment'].queryset = Enrollment.objects.filter(
-            course__is_active=True,
             course__is_closed=False,
         ).select_related('student', 'course__subject').order_by('course__subject__name', 'student__surname')
         # Establecer la fecha de hoy como valor por defecto para lesson_date si es un formulario nuevo
@@ -227,7 +224,7 @@ class AttendanceLogForm(forms.ModelForm):
 
 class AttendanceTakingSelectionForm(forms.Form):
     course = forms.ModelChoiceField(
-        queryset=Course.objects.filter(is_active=True, is_closed=False).select_related('subject').order_by('-academic_period', 'subject__name'),
+        queryset=Course.objects.filter(is_closed=False).select_related('subject').order_by('-academic_period', 'subject__name'),
         label=_("Course"),
         widget=forms.Select(attrs={'class': 'form-control select2'})
     )
@@ -345,16 +342,56 @@ class ClosePeriodForm(forms.Form):
 
 
 class ClosedCourseReportForm(forms.Form):
+    COURSE_STATUS_CHOICES = (
+        ('closed', _('Cerrado')),
+        ('open', _('Abierto')),
+        ('all', _('Todos')),
+    )
+
+    course_status = forms.ChoiceField(
+        choices=COURSE_STATUS_CHOICES,
+        label=_('Estado del curso'),
+        required=False,
+        initial='closed',
+        widget=forms.Select(attrs={'class': 'form-control select2', 'onchange': 'this.form.submit();'}),
+    )
     course = forms.ModelChoiceField(
-        queryset=Course.objects.filter(is_closed=True).select_related('subject').order_by('-academic_period', 'subject__name'),
-        label='Curso cerrado',
+        queryset=Course.objects.none(),
+        label='Curso',
         widget=forms.Select(attrs={'class': 'form-control select2'}),
-        help_text='Selecciona un curso cerrado para ver el reporte final de notas.'
+        help_text='Selecciona un curso para ver el reporte final de notas.'
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['course'].queryset = Course.objects.filter(is_closed=True).select_related('subject').order_by('-academic_period', 'subject__name')
+        selected_status = self.data.get('course_status') or self.initial.get('course_status') or self._infer_status_from_course() or 'closed'
+        if selected_status not in dict(self.COURSE_STATUS_CHOICES):
+            selected_status = 'closed'
+
+        self.fields['course_status'].initial = selected_status
+        self.fields['course'].queryset = self._get_course_queryset(selected_status)
+
+    def _infer_status_from_course(self):
+        course_id = self.data.get('course') or self.initial.get('course')
+        if not course_id:
+            return None
+
+        course = Course.objects.filter(pk=course_id).only('is_closed').first()
+        if course is None:
+            return None
+
+        return 'closed' if course.is_closed else 'open'
+
+    def _get_course_queryset(self, selected_status):
+        queryset = Course.objects.select_related('subject').order_by('-academic_period', 'subject__name')
+
+        if selected_status == 'open':
+            return queryset.filter(is_closed=False)
+
+        if selected_status == 'all':
+            return queryset
+
+        return queryset.filter(is_closed=True)
 
 
 class StudentAcademicHistoryForm(forms.Form):
