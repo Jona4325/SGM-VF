@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}IAP - Iglesia Alianza Pusuqui{% endblock %}</title>
+    <title>{% block title %}Gestión Ministerial{% endblock %}</title>
 
     <link
       rel="stylesheet"
@@ -19,15 +19,10 @@
     {% block extra_head %}{% endblock %}
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
-          <img
-            src="{% static 'img/logo1.png' %}"
-            alt="Logo Pusuqui"
-            style="height: 80px; padding-left: 16px"
-            class="me-2"
-          />
+          <i class="fas fa-church me-2"></i><span>Gestión Ministerial</span>
         </a>
 
         <button
@@ -95,7 +90,7 @@
                 {% if app_perms.can_access_cunakids %}
                 <li>
                   <a class="dropdown-item" href="{% url 'cunakids:index' %}">
-                    <i class="fas fa-baby"></i> Cuna Kids
+                    <i class="fas fa-baby"></i> Sala cuna
                   </a>
                 </li>
                 {% endif %}
@@ -116,28 +111,28 @@
                 {% if app_perms.can_access_jap %}
                 <li>
                   <a class="dropdown-item" href="{% url 'jap:index' %}">
-                    <i class="fas fa-briefcase"></i> JAP
+                    <i class="fas fa-user-graduate"></i> Jóvenes
                   </a>
                 </li>
                 {% endif %}
                 {% if app_perms.can_access_jpro %}
                 <li>
                   <a class="dropdown-item" href="{% url 'jpro:index' %}">
-                    <i class="fas fa-user-tie"></i> Jóvenes Pro
+                    <i class="fas fa-user-tie"></i> Jóvenes profesionales
                   </a>
                 </li>
                 {% endif %}
                 {% if app_perms.can_access_pequediks %}
                 <li>
                   <a class="dropdown-item" href="{% url 'pequediks:index' %}">
-                    <i class="fas fa-child"></i> Pequeñines
+                    <i class="fas fa-child"></i> Ministerio infantil
                   </a>
                 </li>
                 {% endif %}
                 {% if app_perms.can_access_pusukids %}
                 <li>
                   <a class="dropdown-item" href="{% url 'pusukids:index' %}">
-                    <i class="fas fa-star"></i> Pusu Kids
+                    <i class="fas fa-children"></i> Adolescentes
                   </a>
                 </li>
                 {% endif %}
@@ -153,10 +148,6 @@
                 <i class="fas fa-user-circle me-1"></i> Hola, {{ user.username }}
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
-                {% if current_tenant %}
-                <li><h6 class="dropdown-header">Tenant activo: {{ current_tenant.name }}</h6></li>
-                {% endif %}
-
                 {% if tenant_memberships|length > 1 %}
                 <li><h6 class="dropdown-header">Cambiar tenant</h6></li>
                 {% for membership in tenant_memberships %}
@@ -200,6 +191,8 @@
       </div>
     </nav>
 
+    <main class="site-main">
+
     <div class="container mt-4 content-shell">
       {% if messages %}
       <div class="messages-container">
@@ -214,6 +207,9 @@
 
       {% block body %}{% endblock %}
     </div>
+    </main>
+
+    <footer class="site-footer">© {% now "Y" %} Gestión Ministerial</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>

@@ -506,3 +506,141 @@ body::before {
 .sgm-form-card .card-body {
   padding: 1.75rem;
 }
+
+/* Tema de marca neutra, inspirado en la referencia DuckFarm. */
+:root {
+  --forest-700: #004b53;
+  --forest-800: #003238;
+  --teal-600: #008e9b;
+  --ink-700: #344b50;
+  --ink-900: #18343a;
+  --gold-400: #a8cf66;
+  --gold-500: #78a83c;
+  --white-soft: #f6f7f8;
+  --shadow-soft: 0 8px 24px rgba(0, 50, 56, 0.08);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-900);
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #fff;
+}
+
+body::before { display: none; }
+
+.navbar {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.35rem max(1rem, calc((100vw - 1320px) / 2));
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  background: var(--forest-800) !important;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.navbar-brand { color: #fff !important; font-size: 1.2rem; }
+.navbar-brand:hover { color: #d8ebef !important; }
+.navbar .nav-link { color: #d3e5e7 !important; font-weight: 500; border-radius: 5px; }
+.navbar .nav-link:hover, .navbar .nav-link:focus { color: #fff !important; background: rgba(255,255,255,.1) !important; }
+
+.site-main { flex: 1 0 auto; width: 100%; }
+.site-main > .container {
+  width: min(1270px, calc(100% - 2rem));
+  max-width: none;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.site-footer {
+  flex: 0 0 auto;
+  padding: 1rem;
+  color: #fff;
+  text-align: center;
+  background: #00535b;
+}
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .9fr);
+  align-items: center;
+  gap: 2rem;
+  min-height: 480px;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 8px;
+  background: #f6f7f8;
+  box-shadow: none;
+}
+.hero-panel::after { display: none; }
+.hero-copy { position: relative; z-index: 1; }
+.hero-eyebrow {
+  padding: 0;
+  color: #00818c;
+  background: transparent;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+.hero-title { color: #2b3438; font-size: clamp(2.3rem, 4vw, 3.5rem); font-weight: 400; }
+.hero-text { max-width: 620px; margin: .7rem 0 1.4rem; color: #36515a; }
+.hero-divider { margin: 1.4rem 0; border-color: #c8d0d2; }
+.hero-hint { max-width: 620px; color: #243e45; }
+.hero-art { display: grid; grid-template-columns: repeat(3, 1fr); gap: .55rem; min-height: 300px; }
+.hero-art-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
+  min-height: 280px;
+  padding: 1rem .5rem;
+  border-radius: 8px;
+  color: white;
+  background: linear-gradient(160deg, #007a83, #00383d 75%);
+  text-align: center;
+  font-size: .85rem;
+}
+.hero-art-panel:nth-child(2) { background: linear-gradient(160deg, #71a7a5, #1d6066 75%); }
+.hero-art-panel:nth-child(3) { background: linear-gradient(160deg, #a6c66b, #37695e 75%); }
+.hero-art-panel i { font-size: clamp(2rem, 5vw, 3.6rem); }
+
+.section-title { color: var(--forest-800); }
+.ministry-card, .login-shell .card {
+  border: 1px solid #e1e6e7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0,50,56,.06);
+}
+.ministry-card::before { background: var(--teal-600); }
+.ministry-card .card-body { text-align: left; }
+.module-icon { margin-left: 0; border-radius: 10px; color: var(--forest-800); background: #e8f2f3; }
+.btn-primary { border-radius: 6px; background: var(--forest-800); box-shadow: none; }
+.btn-primary:hover, .btn-primary:focus { background: #006772; }
+
+.login-shell { max-width: 520px; margin: clamp(2rem, 8vh, 5rem) auto; }
+.login-card .card-header {
+  margin: 1.5rem 1.5rem 0;
+  padding: .75rem 1rem;
+  color: #fff !important;
+  background: var(--forest-800) !important;
+}
+.login-card .card-header p { color: #d8e8e9; font-size: .9rem; }
+.login-shell .card-body { padding: 1.2rem 1.5rem 1.5rem; }
+.login-shell .form-label { color: #273f45; font-weight: 500; }
+.login-shell .form-control, .login-shell .form-select { border-radius: 5px; padding: .65rem .8rem; }
+.login-shell .btn-primary { width: 100%; margin-top: .35rem; }
+
+@media (max-width: 767px) {
+  .hero-panel { grid-template-columns: 1fr; min-height: 0; }
+  .hero-art { min-height: 180px; }
+  .hero-art-panel { min-height: 180px; }
+  .site-main > .container { width: calc(100% - 1.25rem); }
+}

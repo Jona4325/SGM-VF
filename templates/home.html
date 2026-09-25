@@ -1,29 +1,32 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Panel Principal{% endblock %}
+{% block title %}Inicio · Gestión Ministerial{% endblock %}
 
 {% block body %}
-<div class="hero-panel text-center">
-    <div class="hero-eyebrow">
-        <i class="fas fa-dove"></i>
-        Comunidad y servicio
-    </div>
-    <h1 class="hero-title">Bienvenido, {{ request.user.username }}</h1>
-    <p class="hero-text">Selecciona la aplicaci&oacute;n que necesitas y administra cada ministerio con una experiencia m&aacute;s clara, cercana y organizada.</p>
+<div class="hero-panel">
+  <div class="hero-copy">
+    <div class="hero-eyebrow"><i class="fas fa-church"></i> Comunidad y servicio</div>
+    <h1 class="hero-title">¡Bienvenido!</h1>
+    <p class="hero-text">Organiza los equipos, actividades y servicios de tu iglesia desde un solo lugar.</p>
     {% if current_tenant %}
     <div class="tenant-pill">
         <i class="fas fa-church"></i>
-        Iglesia activa: {{ current_tenant.name }}
+        Iglesia activa
     </div>
     {% endif %}
-    {% if user.is_staff or user.is_superuser %}
-    <div class="d-flex justify-content-center mt-4">
-        <a href="{% url 'admin:index' %}" class="btn btn-warning btn-lg px-4">
-            <i class="fas fa-user-shield me-2"></i>Ir a Administraci&oacute;n
-        </a>
+    <hr class="hero-divider">
+    <p class="hero-hint">Utiliza el menú para ingresar a los ministerios y herramientas disponibles.</p>
+    <div class="d-flex flex-wrap gap-2">
+      {% if user.is_staff or user.is_superuser %}<a href="{% url 'admin:index' %}" class="btn btn-primary"><i class="fas fa-user-shield me-2"></i>Administración</a>{% endif %}
+      {% if app_perms.can_access_pusukids %}<a href="{% url 'pusukids:index' %}" class="btn btn-primary"><i class="fas fa-children me-2"></i>Ministerio infantil</a>{% elif app_perms.can_access_pequediks %}<a href="{% url 'pequediks:index' %}" class="btn btn-primary"><i class="fas fa-children me-2"></i>Ministerio infantil</a>{% elif app_perms.can_access_cunakids %}<a href="{% url 'cunakids:index' %}" class="btn btn-primary"><i class="fas fa-baby me-2"></i>Sala cuna</a>{% endif %}
     </div>
-    {% endif %}
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <div class="hero-art-panel"><i class="fas fa-people-group"></i><span>Una comunidad</span></div>
+    <div class="hero-art-panel"><i class="fas fa-hands-holding-child"></i><span>Al servicio</span></div>
+    <div class="hero-art-panel"><i class="fas fa-heart"></i><span>De todos</span></div>
+  </div>
 </div>
 
 <div class="section-header">
@@ -39,7 +42,7 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-baby"></i></div>
-                    <h5 class="card-title">Cuna Kids</h5>
+                    <h5 class="card-title">Sala cuna</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os, asistencias y coordinadores del ministerio de cuna.</p>
                     <a href="{% url 'cunakids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
@@ -52,8 +55,8 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-book-open-reader"></i></div>
-                    <h5 class="card-title">Academia</h5>
-                    <p class="card-text">Gesti&oacute;n de cursos, estudiantes y profesores de la academia.</p>
+                    <h5 class="card-title">Formación</h5>
+                    <p class="card-text">Gestión de cursos, estudiantes y docentes.</p>
                     <a href="{% url 'academia:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -65,7 +68,7 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-music"></i></div>
-                    <h5 class="card-title">Alabanza</h5>
+                    <h5 class="card-title">Alabanza y adoración</h5>
                     <p class="card-text">Administraci&oacute;n del ministerio de alabanza.</p>
                     <a href="{% url 'alabanza:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
@@ -78,8 +81,8 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-handshake-angle"></i></div>
-                    <h5 class="card-title">Anfitriones</h5>
-                    <p class="card-text">Coordinaci&oacute;n del equipo de anfitriones.</p>
+                    <h5 class="card-title">Hospitalidad</h5>
+                    <p class="card-text">Coordinación del equipo de bienvenida y servicio.</p>
                     <a href="{% url 'anfitriones:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -117,8 +120,8 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-briefcase"></i></div>
-                    <h5 class="card-title">JAP</h5>
-                    <p class="card-text">Ministerio de J&oacute;venes Adultos Profesionales.</p>
+                    <h5 class="card-title">Jóvenes</h5>
+                    <p class="card-text">Organización de grupos, servidores y asistencia.</p>
                     <a href="{% url 'jap:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
             </div>
@@ -130,7 +133,7 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-child-reaching"></i></div>
-                    <h5 class="card-title">Pusukids</h5>
+                    <h5 class="card-title">Ministerio infantil</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os, asistencias y coordinadores del ministerio de ni&ntilde;os.</p>
                     <a href="{% url 'pusukids:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>
@@ -143,7 +146,7 @@
             <div class="card h-100 ministry-card">
                 <div class="card-body d-flex flex-column">
                     <div class="module-icon"><i class="fas fa-shapes"></i></div>
-                    <h5 class="card-title">Pequekids</h5>
+                    <h5 class="card-title">Ministerio infantil · primera infancia</h5>
                     <p class="card-text">Gesti&oacute;n de ni&ntilde;os de 2 a 4 a&ntilde;os, asistencias y coordinadores del ministerio de ni&ntilde;os.</p>
                     <a href="{% url 'pequediks:index' %}" class="btn btn-primary mt-auto">Acceder</a>
                 </div>

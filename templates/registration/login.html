@@ -4,24 +4,10 @@
 
 {% block body %}
 <div class="login-shell">
-  <div class="row g-4 align-items-stretch">
-    <div class="col-lg-6">
-      <div class="login-hero">
-        <div class="hero-eyebrow">
-          <i class="fas fa-church"></i>
-          Casa, fe y servicio
-        </div>
-        <h2>Bienvenido al sistema ministerial</h2>
-        <p>Ingresa a la plataforma, selecciona tu iglesia y trabaja en un entorno m&aacute;s ordenado, seguro y humano para cada ministerio.</p>
-        <div class="login-verse">
-          "Y todo lo que hagan, h&aacute;ganlo de coraz&oacute;n, como para el Se&ntilde;or."
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-6">
-      <div class="card shadow-lg h-100">
-        <div class="card-header text-center">
-          <h3 class="mb-0">Iniciar Sesi&oacute;n</h3>
+  <div class="card login-card shadow-lg">
+        <div class="card-header">
+          <h3 class="mb-1">Acceso al sistema</h3>
+          <p class="mb-0">Ingresa tus credenciales para continuar.</p>
         </div>
         <div class="card-body">
           {% if form.errors %}
@@ -33,7 +19,7 @@
           <form method="post" action="{% url 'account:login' %}">
             {% csrf_token %}
             <div class="mb-3">
-              <label for="{{ form.tenant.id_for_label }}" class="form-label">Iglesia</label>
+              <label for="{{ form.tenant.id_for_label }}" class="form-label">Organización</label>
               {{ form.tenant }}
             </div>
             <div class="mb-3">
@@ -49,8 +35,6 @@
             </div>
           </form>
         </div>
-      </div>
-    </div>
   </div>
 </div>
 {% endblock %}
