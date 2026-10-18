@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Reporte Semanal Consolidado — Pusukids{% endblock %}
+
+{% block body %}
+<div class="section-header">
+  <div>
+    <h2 class="section-title">
+      <i class="fas fa-calendar-week me-2" style="color: var(--forest-700);"></i>Reporte Semanal Consolidado
+    </h2>
+    <p class="section-subtitle">Resumen semanal total de asistencia de niños, sin desagregar por grupo ni coordinador.</p>
+  </div>
+</div>
+
+<div class="sgm-form-card mb-4">
+  <div class="card-header"><i class="fas fa-filter me-2"></i>Filtros</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Desde</label>
+        <input type="date" name="start_date" value="{{ start_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <label class="form-label">Hasta</label>
+        <input type="date" name="end_date" value="{{ end_date|default:'' }}" class="form-control">
+      </div>
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Filtrar</button>
+      </div>
+      <div class="col-lg-3 col-md-6 d-flex gap-2">
+        <a href="{% url 'pusukids:attendance_report_weekly_consolidated' %}" class="btn btn-outline-secondary w-100">Limpiar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if chart_labels and chart_values %}
+<div class="card ministry-card mb-4">
+  <div class="card-body p-4">
+    <h5 class="mb-3">
+      <i class="fas fa-chart-line me-2" style="color: var(--forest-700);"></i>Niños asistentes por semana
+    </h5>
+    <div style="height: 320px;">
+      <canvas id="weekly-consolidated-chart"></canvas>
+    </div>
+  </div>
+</div>
+
+{{ chart_labels|json_script:"weekly-consolidated-labels" }}
+{{ chart_values|json_script:"weekly-consolidated-values" }}
+{% endif %}
+
+<div class="sgm-form-card">
+  <div class="card-header"><i class="fas fa-table me-2"></i>Detalle consolidado</div>
+  <div class="card-body">
+    {% if report_rows %}
+    <div class="table-responsive">
+      <table class="table sgm-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th class="text-end">Total Niños</th>
+            <th class="text-end">Total Servidores</th>
+            <th class="text-end">Dinero Recolectado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in report_rows %}
+          <tr>
+            <td>{{ row.fecha__date|date:"d/m/Y" }}</td>
+            <td class="text-end">{{ row.total_kids|default:0 }}</td>
+            <td class="text-end">{{ row.total_servers|default:0 }}</td>
+            <td class="text-end">{{ row.money_collected|default:0|floatformat:2|intcomma }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No hay registros de asistencia semanal para los filtros seleccionados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mt-4 d-flex gap-2">
+  <a href="{% url 'pusukids:reports_menu' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Volver a Reportes
+  </a>
+  <a href="{% url 'pusukids:index' %}" class="btn btn-outline-secondary">Volver al Inicio de Pusukids</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+{% if chart_labels and chart_values %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const labels = JSON.parse(document.getElementById('weekly-consolidated-labels').textContent);
+  const values = JSON.parse(document.getElementById('weekly-consolidated-values').textContent);
+
+  const ctx = document.getElementById('weekly-consolidated-chart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Niños asistentes',
+          data: values,
+          borderColor: '#1f5f46',
+          backgroundColor: 'rgba(31, 95, 70, 0.15)',
+          pointBackgroundColor: '#1f5f46',
+          pointBorderColor: '#1f5f46',
+          pointRadius: 4,
+          tension: 0.25,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            },
+            title: {
+              display: true,
+              text: 'Total de niños'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Semana'
+            }
+          }
+        }
+      }
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}

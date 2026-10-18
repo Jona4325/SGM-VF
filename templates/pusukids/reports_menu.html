@@ -29,6 +29,19 @@
   <div class="col">
     <div class="card h-100 ministry-card">
       <div class="card-body d-flex flex-column">
+        <div class="module-icon"><i class="fas fa-calendar-week"></i></div>
+        <h5 class="card-title">Asistencia Semanal Consolidada</h5>
+        <p class="card-text">Resumen semanal total de todos los niños sin desagregar por grupo ni coordinador.</p>
+        <a href="{% url 'pusukids:attendance_report_weekly_consolidated' %}" class="btn btn-primary mt-auto w-100">
+          Ver Reporte
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card h-100 ministry-card">
+      <div class="card-body d-flex flex-column">
         <div class="module-icon"><i class="fas fa-table"></i></div>
         <h5 class="card-title">Asistencia Mensual de Niños</h5>
         <p class="card-text">Reporte tipo pivote con niños en filas y meses en columnas.</p>

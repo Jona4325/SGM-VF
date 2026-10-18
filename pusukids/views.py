@@ -19,7 +19,7 @@ from .forms import (
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import ProtectedError, Q, Count
+from django.db.models import ProtectedError, Q, Count, Sum
 from django.db.models.functions import Lower, Trim
 import traceback # Para debug si es necesario
 
@@ -197,6 +197,43 @@ def attendance_report_children_monthly_pivot(request):
         'selected_groupage_id': int(selected_groupage_id) if selected_groupage_id.isdigit() else None,
         'groupage_options': groupage.objects.order_by('name'),
     })
+
+
+@login_required
+def attendance_report_weekly_consolidated(request):
+    """Reporte semanal consolidado de asistencia de niños sin desagregar por grupo ni coordinador."""
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    report_qs = (
+        weekinfo.objects
+        .select_related('fecha')
+        .values('fecha__id', 'fecha__date')
+        .annotate(
+            total_kids=Sum('total_kids'),
+            total_servers=Sum('total_servers'),
+            money_collected=Sum('money_collected'),
+        )
+    )
+
+    if start_date:
+        report_qs = report_qs.filter(fecha__date__gte=start_date)
+    if end_date:
+        report_qs = report_qs.filter(fecha__date__lte=end_date)
+
+    report_rows = report_qs.order_by('fecha__date')
+
+    chart_labels = [row['fecha__date'].strftime('%d/%m/%Y') for row in report_rows if row.get('fecha__date')]
+    chart_values = [row['total_kids'] or 0 for row in report_rows]
+
+    return render(request, 'pusukids/attendance_report_weekly_consolidated.html', {
+        'report_rows': report_rows,
+        'start_date': start_date,
+        'end_date': end_date,
+        'chart_labels': chart_labels,
+        'chart_values': chart_values,
+    })
+
 
 @login_required
 def coordinator_list(request):

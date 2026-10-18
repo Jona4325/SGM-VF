@@ -9,6 +9,7 @@ urlpatterns = [
     # --- URLs para Reportes ---
     path('reports/', views.reports_menu, name='reports_menu'),
     path('reports/attendance-by-groupage/', views.attendance_report_groupage, name='attendance_report_groupage'),
+    path('reports/attendance-weekly-consolidated/', views.attendance_report_weekly_consolidated, name='attendance_report_weekly_consolidated'),
     path('reports/children-monthly-pivot/', views.attendance_report_children_monthly_pivot, name='attendance_report_children_monthly_pivot'),
 
     # URLs para el CRUD de Coordinator
