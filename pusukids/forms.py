@@ -205,11 +205,7 @@ class BatchAssistanceForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        today = datetime_date.today()
-        self.fields['date'].queryset = fecha.objects.filter(
-            date__year=today.year,
-            date__month=today.month
-        ).order_by('-date')
+        self.fields['date'].queryset = fecha.objects.order_by('-date')
         self.fields['group'].queryset = group.objects.order_by('name')
         self.fields['coordinator'].queryset = coordinator.objects.order_by('surname', 'name')
         self.fields['groupage'].queryset = groupage.objects.order_by('name')
